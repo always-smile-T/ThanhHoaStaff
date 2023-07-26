@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "269604310634",
+    "project_id": "thanhhoa-5b7f5",
+    "storage_bucket": "thanhhoa-5b7f5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:269604310634:android:5bc30acb0c838f8773c413",
+        "android_client_info": {
+          "package_name": "com.example.thanhhoa_garden"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "269604310634-gmc3lgf2pnv9idtj7se15823v7l8mgmc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.thanhhoa_garden",
+            "certificate_hash": "6d5b565885d21e4ae0f05156271938bcc7c37ddc"
+          }
+        },
+        {
+          "client_id": "269604310634-anqnklmj4elrgpj11uri8ujerfnf2aip.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_C_fOl-xN9dwVXUO8Is_EyhdcvuayNOg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "269604310634-anqnklmj4elrgpj11uri8ujerfnf2aip.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "269604310634-9rl2rn87msr0phqobo5bpusqdgm3ocio.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.thanhhoaGardenStaffApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:269604310634:android:9b856a3d44c9762e73c413",
+        "android_client_info": {
+          "package_name": "com.example.thanhhoa_garden_staff_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "269604310634-23tak25f2k6vamftfr11lmtadn0a211t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.thanhhoa_garden_staff_app",
+            "certificate_hash": "02601d8362653bc073d1a08b7fc06591a0d4832e"
+          }
+        },
+        {
+          "client_id": "269604310634-anqnklmj4elrgpj11uri8ujerfnf2aip.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_C_fOl-xN9dwVXUO8Is_EyhdcvuayNOg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "269604310634-anqnklmj4elrgpj11uri8ujerfnf2aip.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "269604310634-9rl2rn87msr0phqobo5bpusqdgm3ocio.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.thanhhoaGardenStaffApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
