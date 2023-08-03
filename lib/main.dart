@@ -28,6 +28,7 @@ import '../../screens/authentication/loginPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../screens/home/homePage.dart';
 import '../../utils/helper/shared_prefs.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 
 late SharedPreferences sharedPreferences;
@@ -49,6 +50,7 @@ void main() async {
   //   }
   // });
 
+  initializeDateFormatting('vi_VN');
   runApp(const MyApp());
 }
 
@@ -102,6 +104,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.cyan,
         ),
+        debugShowCheckedModeBanner: false,
         home: const LoginPage(),
       ),
     );

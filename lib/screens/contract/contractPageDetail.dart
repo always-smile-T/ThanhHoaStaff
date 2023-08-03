@@ -1,18 +1,16 @@
 // ignore_for_file: must_be_immutable, file_names, non_constant_identifier_names, prefer_interpolation_to_compose_strings
 
+import 'dart:convert';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:thanhhoa_garden_staff_app/models/contract/contractDetail/contract_detail.dart';
-import 'package:thanhhoa_garden_staff_app/providers/contract/contract_provider.dart';
 import '../../components/appBar.dart';
 import '../../components/circular.dart';
-import '../../components/feedback/listfeedback_component.dart';
 import '../../constants/constants.dart';
 import '../../models/contract/contract.dart';
-import '../../providers/feedback/feedback_provider.dart';
+import '../../providers/contract/contract_provider.dart';
 import '../../utils/format/date.dart';
 import '../../utils/format/status.dart';
 
@@ -91,7 +89,7 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10,),
-                  const Text("Thông tin hợp đồng", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),),
+                  const Text("Thông tin hợp đồng", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: buttonColor),),
                   const SizedBox(height: 10,),
                   _contractFiled('ID hợp đồng', contract.id.toString()),
                   _contractFiled('Tên hợp đồng',contract.title.toString()),
@@ -120,7 +118,7 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10,),
-                  const Text("Thông tin khách hàng sử dụng", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),),
+                  const Text("Thông tin khách hàng sử dụng", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: buttonColor),),
                   const SizedBox(height: 10,),
                   _contractFiled('Tên khách hàng',contract.fullName.toString()),
                   _contractFiled('Địa chỉ',contract.address.toString().length >= 50 ? contract.address.toString().substring(0,50) + "..." : contract.address.toString()),
@@ -148,7 +146,7 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10,),
-                  const Text("Thông tin khách hàng ký kết", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),),
+                  const Text("Thông tin khách hàng ký kết", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: buttonColor),),
                   const SizedBox(height: 10,),
                   _contractFiled('ID khách hàng', contract.showCustomerModel!.id.toString()),
                   _contractFiled('Tên khách hàng',contract.showCustomerModel!.fullName.toString()),
@@ -255,8 +253,8 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                   );
                 }
               }
-              return const Center(
-                child: Text('Error'),
+              return Center(
+                child: Text(fetchContractDetailByID(widget.contractID, pageNo, 10).toString()),
               );
             },
           ),

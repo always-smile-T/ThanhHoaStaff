@@ -9,6 +9,7 @@ import 'package:thanhhoa_garden_staff_app/report/report_provider.dart';
 import '../../components/appBar.dart';
 import '../../components/button/dialog_button.dart';
 import '../../constants/constants.dart';
+import '../providers/store/my_store.dart';
 
 
 class CreateReportPage extends StatefulWidget {
@@ -110,10 +111,10 @@ class _CreateReportPageState extends State<CreateReportPage> {
                       }
                       else {
                         setState(() {
-                          desNotNull = true;
+                          /*desNotNull = true;
                           hintText = 'Để lại phản hồi ở đây';
                           createReport(_reasonController.text, contractDetailID);
-                          Navigator.pop(context);
+                          Navigator.pop(context);*/
                         });
                       }
                     }
@@ -121,7 +122,16 @@ class _CreateReportPageState extends State<CreateReportPage> {
                   },
                   child: const ConfirmButton(title: 'Gửi báo cáo', width: 100.0,),),
               ],
-            )
+            ),
+            GestureDetector(
+              onTap: () async {
+                var myStore = await FetchInfoMyStore('S002');
+                print(myStore.address);
+              },
+              child: Container(
+                child: Text('test api'),
+              ),
+            ),
           ],
         ),),
     );

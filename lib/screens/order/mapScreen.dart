@@ -7,8 +7,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../components/appBar.dart';
 import '../../constants/constants.dart';
 import '../../models/store/store.dart';
-import '../../providers/store/store_provider.dart';
 import 'package:geocoder2/geocoder2.dart';
+import '../../providers/store/store_provider.dart';
 
 class MapScreen extends StatefulWidget {
   Function callback;

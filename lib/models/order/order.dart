@@ -98,7 +98,7 @@ class OrderObject {
   }
 
   Map<String, dynamic> createOrder(List<Map<String, dynamic>> plant,
-      String StoreID, String DistancePriceID) {
+      String StoreID, String DistancePriceID, staffID,latLong, receiptIMG) {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['fullName'] = fullName;
     data['email'] = email;
@@ -109,6 +109,10 @@ class OrderObject {
     data['storeID'] = StoreID;
     data['distancePriceID'] = DistancePriceID;
     data['detailList'] = plant;
+    data['staffID'] = staffID;
+    data['latLong'] = latLong;
+    data['receiptIMG'] = receiptIMG;
+    data['isPaid'] = true;
     return data;
   }
 }

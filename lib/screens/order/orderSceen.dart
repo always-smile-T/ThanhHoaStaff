@@ -11,6 +11,8 @@ import 'package:geocoder2/geocoder2.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:thanhhoa_garden_staff_app/components/circular.dart';
+import 'package:thanhhoa_garden_staff_app/utils/connection/utilsConnection.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../components/appBar.dart';
@@ -24,6 +26,7 @@ import '../../models/order/order.dart';
 import '../../models/store/store.dart';
 import '../../providers/authentication/authantication_provider.dart';
 import '../../providers/order/order_provider.dart';
+import '../../providers/store/my_store.dart';
 import '../../providers/store/store_provider.dart';
 import '../../screens/home/homePage.dart';
 import '../../screens/order/mapScreen.dart';
@@ -57,12 +60,16 @@ class _OrderScreenState extends State<OrderScreen> {
   AuthenticationProvider _authenticationProvider = AuthenticationProvider();
   StoreProvider _storeProvider = StoreProvider();
   OrderProvider _orderProvider = OrderProvider();
-
+  String storeAdress = '';
+  String storeName = '';
   List<Store> listStore = [];
   UserObj.User? user;
   Distance distancePrice = Distance();
+  bool isFT = true;
+  String receiptIMG = 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTar7ByGunwRPJavdgAR9qWbvcEgebw2kDB5Q&usqp=CAU';
 
   Map<String, dynamic> listDistance = {};
+  Map<String, dynamic> storeDistance = {};
   Map<String, dynamic> distance = {};
 
   LatLng origin = LatLng(0, 0);
@@ -91,15 +98,16 @@ class _OrderScreenState extends State<OrderScreen> {
       if (value) {
         setState(() {
           user = _authenticationProvider.loggedInUser;
-          _nameController.text = user!.fullName;
+          /*_nameController.text = user!.fullName;
           _emailController.text = user!.email;
           _phoneController.text = user!.phone;
-          _addressController.text = user!.address;
+          _addressController.text = addressCus;*/
+          //_addressController.text = user!.address;
         });
-        getCoordinatesFromAddress(user!.address).then((value) {
+        getCoordinatesFromAddress(_addressController.text).then((value) {
           setState(() {
             origin = value;
-            getDistanceNearBy().then((value) {
+            getDistanceThisStore().then((value) {
               distance = value;
               getDistancePrice();
             });
@@ -113,16 +121,22 @@ class _OrderScreenState extends State<OrderScreen> {
     LatLng latLng = LatLng(0.0, 0.0);
     GeoData data = await Geocoder2.getDataFromAddress(
         address: address, googleMapApiKey: GG_API_Key, language: 'vi');
-    latLng = LatLng(data.latitude, data.longitude);
+    latLng = isFT ?  LatLng(0.0, 0.0) : LatLng(data.latitude, data.longitude);
 
     return latLng;
   }
 
-  setAdress(String address, LatLng orgin) {
+ /* setAdress(String address, LatLng orgin) {
     setState(() {
       origin = orgin;
       _addressController.text = address;
       isLoading = true;
+      isStore ? getDistanceThisStore().then((value) {
+        distance = value;
+        setState(() {
+          isLoading = false;
+        });
+      }) :
       getDistanceNearBy().then((value) {
         distance = value;
         setState(() {
@@ -130,32 +144,35 @@ class _OrderScreenState extends State<OrderScreen> {
         });
       });
     });
-  }
+  }*/
 
   getListStore() async {
     isLoading = true;
     await _storeProvider.getStore().then((value) {
       if (value) {
         setState(() {
-          listStore = _storeProvider.list!;
+          /*listStore = _storeProvider.list!;
+          listStore = _storeProvider.list!;*/
         });
       }
       getUserInfor();
     });
   }
 
-  Future<Map<String, double>> getDistanceNearBy() async {
+////1214
+  Future<Map<String, double>> getDistanceThisStore() async {
     Map<String, double> Distance = {};
-    for (var store in listStore) {
-      await getCoordinatesFromAddress(store.address).then((value) async {
-        await getDistance(origin, value).then((value) {
-          listDistance[store.id] = value;
-        });
+    var fetchStoreID = await FetchMyStoreID();
+    String myStoreID = FormatStoreID(fetchStoreID.toString());
+    var myStore = await FetchInfoMyStore(myStoreID);
+    await getCoordinatesFromAddress(myStore.address).then((value) async {
+      await getDistance(origin, value).then((value) {
+        storeDistance[myStore.address] = value;
       });
-    }
-    double thevalue = listDistance.values.first ?? 0;
-    String thekey = '';
-    listDistance.forEach((k, v) {
+    });
+    double thevalue = storeDistance.values.first ?? 0;
+    String thekey = myStoreID;
+    storeDistance.forEach((k, v) {
       if (v < thevalue) {
         thevalue = v;
         thekey = k;
@@ -178,6 +195,7 @@ class _OrderScreenState extends State<OrderScreen> {
     } on HttpException catch (e) {}
     return distance;
   }
+
 
   @override
   void dispose() {
@@ -287,10 +305,10 @@ class _OrderScreenState extends State<OrderScreen> {
           const Spacer(),
           (isLoading)
               ? Container()
-              : GestureDetector(
+              : GestureDetector( ////1214
             onTap: () {
               List<Map<String, dynamic>> plant = [];
-              String method = COD ? 'Offline' : 'Online';
+              String method = COD ? 'Cash' : 'Card';
               double dis = distance.values.first;
               OrderObject order = OrderObject(
                   fullName: _nameController.text,
@@ -304,7 +322,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 plant.add(data.toJson());
               }
               var data = order.createOrder(plant, distance.keys.first,
-                  distancePrice.distancePriceID);
+                  distancePrice.distancePriceID, user!.userID, '', receiptIMG);
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
@@ -319,154 +337,156 @@ class _OrderScreenState extends State<OrderScreen> {
                     content: SizedBox(
                       height: 395,
                       width: size.width - 10,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _rowInfor('Tên', order.fullName),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            _rowInfor('Email', order.email),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            _rowInfor('Số điện thoại', order.phone),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Row(
-                              children: [
-                                Container(
-                                  height: 7,
-                                  width: 7,
-                                  decoration: BoxDecoration(
-                                      color: buttonColor,
-                                      borderRadius:
-                                      BorderRadius.circular(50)),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                const Text(
-                                  'Địa chỉ: ',
-                                  style: TextStyle(
-                                      color: buttonColor,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            SizedBox(
-                              width: size.width - 10,
-                              child: AutoSizeText(
-                                '\t\t' + order.address,
-                                maxLines: 2,
-                                style: const TextStyle(
-                                  fontSize: 18,
+                      child: SingleChildScrollView(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _rowInfor('Tên', order.fullName),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              _rowInfor('Email', order.email),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              _rowInfor('Số điện thoại', order.phone),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Row(
+                                children: [
+                                  Container(
+                                    height: 7,
+                                    width: 7,
+                                    decoration: BoxDecoration(
+                                        color: buttonColor,
+                                        borderRadius:
+                                        BorderRadius.circular(50)),
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  const Text(
+                                    'Địa chỉ: ',
+                                    style: TextStyle(
+                                        color: buttonColor,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              SizedBox(
+                                width: size.width - 10,
+                                child: AutoSizeText(
+                                  '\t\t' + order.address,
+                                  maxLines: 2,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            const Text(
-                              'Thông tin đơn hàng : ',
-                              style: TextStyle(
-                                  color: buttonColor,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Row(children: [
-                              Text(
-                                  '${widget.listPlant.fold(0, (sum, item) => sum + item.quantity!)} sản phẩm'),
-                              const Spacer(),
-                              const Text('Giá: '),
-                              Text(
-                                '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!))} đ',
-                                style: const TextStyle(color: priceColor),
+                              const SizedBox(
+                                height: 10,
                               ),
-                            ]),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Row(
-                              children: const [Text('Phí giao hàng: ')],
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
-                                Column(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.start,
+                              const Text(
+                                'Thông tin đơn hàng : ',
+                                style: TextStyle(
+                                    color: buttonColor,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Row(children: [
+                                Text(
+                                    '${widget.listPlant.fold(0, (sum, item) => sum + item.quantity!)} sản phẩm'),
+                                const Spacer(),
+                                const Text('Giá: '),
+                                Text(
+                                  '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!))} đ',
+                                  style: const TextStyle(color: priceColor),
+                                ),
+                              ]),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Row(
+                                children: const [Text('Phí giao hàng: ')],
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: const [
+                                        Text('Phí vận chuyển cây : ',
+                                            style: TextStyle(
+                                                color: darkText,
+                                                fontSize: 16)),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text('Phí giao hàng: ',
+                                            style: TextStyle(
+                                                color: darkText,
+                                                fontSize: 16)),
+                                      ]),
+                                  Column(
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: const [
-                                      Text('Phí vận chuyển cây : ',
-                                          style: TextStyle(
-                                              color: darkText,
-                                              fontSize: 16)),
-                                      SizedBox(
+                                    CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                          '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!))} đ',
+                                          style: const TextStyle(
+                                              color: priceColor)),
+                                      const SizedBox(
                                         height: 10,
                                       ),
-                                      Text('Phí giao hàng: ',
-                                          style: TextStyle(
-                                              color: darkText,
-                                              fontSize: 16)),
-                                    ]),
-                                Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                        '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!))} đ',
-                                        style: const TextStyle(
-                                            color: priceColor)),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    Text(
-                                        '${f.format((distance.values.first) * distancePrice.pricePerKm ?? 0)} đ',
-                                        style: const TextStyle(
-                                            color: priceColor)),
-                                    Text(
-                                        ' ( ${(distance.values.first)} Km )',
-                                        style: const TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 15)),
-                                  ],
-                                )
-                              ],
-                            ),
-                            Center(
-                              child: Column(children: [
-                                const Text('Tổng cộng : ',
-                                    style: TextStyle(
-                                        color: darkText,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500)),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text(
-                                    '${f.format((widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!)) + (widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!)) + ((distance.values.first) * distancePrice.pricePerKm ?? 0))} đ',
-                                    style: const TextStyle(
-                                        color: priceColor,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500)),
-                              ]),
-                            )
-                          ]),
+                                      Text(
+                                          '${f.format(distance.values.first * distancePrice.pricePerKm ?? 0)} đ',
+                                          style: const TextStyle(
+                                              color: priceColor)),
+                                      Text(
+                                          ' ( ${(distance.values.first)} Km )',
+                                          style: const TextStyle(
+                                              color: Colors.red,
+                                              fontSize: 15)),
+                                    ],
+                                  )
+                                ],
+                              ),
+                              Center(
+                                child: Column(children: [
+                                  const Text('Tổng cộng : ',
+                                      style: TextStyle(
+                                          color: darkText,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500)),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                      '${f.format((widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!)) + (widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!)) + ((distance.values.first) * distancePrice.pricePerKm ?? 0))} đ',
+                                      style: const TextStyle(
+                                          color: priceColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500)),
+                                ]),
+                              )
+                            ]),
+                      ),
                     ),
                     actions: [
                       Row(
@@ -495,12 +515,12 @@ class _OrderScreenState extends State<OrderScreen> {
                           GestureDetector(
                             onTap: () {
                               OverlayLoadingProgress.start(context);
+                              print("data: " + data.toString() );
                               _orderProvider
                                   .createOrder(data)
                                   .then((value) {
                                 if (value) {
                                   cartBloc.send(GetCart());
-
                                   Fluttertoast.showToast(
                                       msg: "Tạo Đơn Hàng Thành Công",
                                       toastLength: Toast.LENGTH_SHORT,
@@ -639,6 +659,12 @@ class _OrderScreenState extends State<OrderScreen> {
 
   bool _visibility = false;
   Widget _shipTab(List<OrderCart> listPlant) {
+    List <ListSlot> _slot = [
+      //[0]: slot
+      ListSlot(description: ['6:30-7:00AM','12:00-12:30PM','5:30-6:00PM']),
+      //[1]: collection
+      ListSlot(description: ["Sua hat","Sua oc cho","Sua hanh nhan","Sua dau nanh"]),
+    ] ;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -661,33 +687,38 @@ class _OrderScreenState extends State<OrderScreen> {
             null, _phoneController),
         //address
         _textFormField(
-            "Địa chỉ giao hàng", 'Bấm vào đây để chọn địa chỉ !!!', true, () {
+            "Địa chỉ giao hàng", 'Bấm vào đây để chọn địa chỉ !!!', false, /*() {
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => MapScreen(callback: setAdress),
           ));
-        }, _addressController),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _visibility = !_visibility;
-            });
-          },
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              margin: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50), color: buttonColor),
-              child: const Text(
-                'Kiểm tra phí vận chuyển',
-                style: TextStyle(
-                    color: lightText,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500),
-              ),
-            ),
+        }*/ null, _addressController),
+        Container(
+          padding: const EdgeInsets.all(10),
+          child:  const Text(
+            'Kiểm tra phí giao hàng: ',
+            style: TextStyle(
+                color: darkText, fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _addressController == null ? (_visibility = false) : (_visibility = true);
+                  isFT = false;
+                  getListStore();
+                });
+              },
+              child: checkDeliveryFee('Kiểm tra phí giao hàng'),
+            ),
+          ],
+        ),
+        /*_addressController == null ? const Text('Vui lòng nhập địa chỉ', style: TextStyle(
+          color: Colors.red,
+          fontSize: 12,
+        )) : const SizedBox(),*/
         Visibility(
           visible: _visibility,
           child: Column(
@@ -697,7 +728,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 height: 5,
               ),
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.only(top: 10, right: 10, left: 10),
                 child: const Text(
                   'Thông tin giao hàng',
                   style: TextStyle(
@@ -709,37 +740,65 @@ class _OrderScreenState extends State<OrderScreen> {
               (!isLoading)
                   ? Container(
                 padding: const EdgeInsets.all(10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Column(
                   children: [
-                    Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('Phí vận chuyển cây : ',
-                              style: TextStyle(
-                                  color: darkText, fontSize: 16)),
-                          Text('Phí giao hàng: ',
-                              style: TextStyle(
-                                  color: darkText, fontSize: 16)),
-                        ]),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!))} đ',
-                            style: const TextStyle(
+                        const Text('Cửa hàng : ',
+                            style: TextStyle(
                                 color: darkText, fontSize: 16)),
                         Text(
-                            '${f.format((distance.values.first) * distancePrice.pricePerKm ?? 0)} đ',
+                            _storeProvider.list!.first.storeName,
                             style: const TextStyle(
-                                color: darkText, fontSize: 16)),
-                        Text(' ( ${(distance.values.first)} Km )',
-                            style: const TextStyle(
-                                color: Colors.red, fontSize: 15)),
+                                color: darkText, fontSize: 18, fontWeight: FontWeight.bold)),
                       ],
-                    )
+                    ),
+                    SizedBox(height: 5,),
+                    Container(
+                      width: MediaQuery.of(context).size.width - 10,
+                      child:  AutoSizeText(
+                          '(' + _storeProvider.list!.first.address + ')',
+                          style: const TextStyle(
+                              color: darkText, fontSize:12)),
+                    ),
+                    const SizedBox(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text('Phí vận chuyển cây : ',
+                                  style: TextStyle(
+                                      color: darkText, fontSize: 16)),
+                              SizedBox(height: 5,),
+                              Text('Phí giao hàng: ',
+                                  style: TextStyle(
+                                      color: darkText, fontSize: 16)),
+                            ]),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                                '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!))} đ',
+                                style: const TextStyle(
+                                    color: darkText, fontSize: 16)),
+                            const SizedBox(height: 5,),
+
+                            Text(
+                                '${f.format((distance.values.first) * distancePrice.pricePerKm ?? 0)} đ',
+                                style: const TextStyle(
+                                    color: darkText, fontSize: 16)),
+                            Text(' ( ${(distance.values.first)} Km )',
+                                style: const TextStyle(
+                                    color: Colors.red, fontSize: 15)),
+                          ],
+                        )
+                      ],
+                    ),
                   ],
                 ),
               )
@@ -748,18 +807,13 @@ class _OrderScreenState extends State<OrderScreen> {
               ),
               Container(
                 padding: const EdgeInsets.only(left: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                        '*Hệ thống sẽ tự động chọn cửa hàng gần nhất cho bạn (${distancePrice.pricePerKm} / km)',
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 12,
-                        )),
-                  ],
-                ),
+                child: Text('Phí vận chuyển: (${distancePrice.pricePerKm} / km)',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                    ))
               ),
+
             ],
           ),
         ),
@@ -794,7 +848,7 @@ class _OrderScreenState extends State<OrderScreen> {
             const SizedBox(
               width: 20,
             ),
-            const Text('Thanh toán khi nhận hàng')
+            const Text('Tiền Mặt')
           ],
         ),
         Row(
@@ -812,7 +866,7 @@ class _OrderScreenState extends State<OrderScreen> {
             const SizedBox(
               width: 20,
             ),
-            const Text('Thanh toán trực tuyến')
+            const Text('Chuyển Khoản')
           ],
         )
       ],
@@ -896,4 +950,27 @@ class _OrderScreenState extends State<OrderScreen> {
     }
     return buttonColor;
   }
+
+  Widget checkDeliveryFee (title){
+    return Container(
+      width: MediaQuery.of(context).size.width - 100,
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50), color: buttonColor),
+      child: Center(
+        child: Text(title,
+          style: const TextStyle(
+              color: lightText,
+              fontSize: 16,
+              fontWeight: FontWeight.w500),
+        ),
+      ),
+    );
+  }
+}
+enum Menu { menuOne, menuTwo, menuThree }
+class ListSlot{
+  List description = [];
+  ListSlot({required this.description});
 }

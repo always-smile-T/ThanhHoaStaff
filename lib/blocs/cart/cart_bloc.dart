@@ -1,10 +1,12 @@
 import 'dart:async';
+
+import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import '../../providers/cart/cart_provider.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../blocs/cart/cart_state.dart';
-import '../../providers/cart/cart_provider.dart';
-import 'cart_event.dart';
 
 
 class CartBloc {

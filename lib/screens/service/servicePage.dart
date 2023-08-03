@@ -6,7 +6,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import '../../blocs/bonsai/cart/cart_state.dart';
+import '../../blocs/cart/cart_state.dart';
 import '../../blocs/service/service_bloc.dart';
 import '../../blocs/service/service_event.dart';
 import '../../blocs/service/service_state.dart';

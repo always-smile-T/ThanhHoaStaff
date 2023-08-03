@@ -3,7 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../../blocs/order/orderEvent.dart';
+import '../../constants/constants.dart';
 import '../../models/authentication/user.dart';
 import '../../models/cart/cart.dart';
 import '../../models/feedback/feedback.dart';
@@ -223,33 +226,6 @@ class OrderProvider extends ChangeNotifier {
     return result;
   }
 
-  Future<bool> cancelOrder(OrderEvent event) async {
-    bool result = false;
-    Map<String, dynamic> param = ({});
-    param['orderID'] = '${event.orderID}';
-    param['reason'] = '${event.reason}';
-    if (event.status != null) param['status'] = event.status;
-    String queryString = Uri(queryParameters: param).query;
-    var header = getheader(getTokenAuthenFromSharedPrefs());
-    try {
-      final res = await http.put(
-          Uri.parse(mainURL + cancelOrderURL + queryString),
-          headers: header);
-      if (res.statusCode == 200) {
-        result = true;
-        notifyListeners();
-      } else {
-        result = false;
-        notifyListeners();
-      }
-    } on HttpException catch (e) {
-      if (kDebugMode) {
-        print(e.toString());
-      }
-    }
-    return result;
-  }
-
   Future<bool> getOrderDetailByFeedback(OrderEvent event) async {
     bool result = false;
 
@@ -317,5 +293,36 @@ class OrderProvider extends ChangeNotifier {
       }
     }
     return result;
+  }
+}
+
+
+Future<void> ChangeStatusOrder(orderID, status) async {
+  var header = getheader(getTokenAuthenFromSharedPrefs());
+  String url = '$mainURL/order/changeOrderStatus?orderID=$orderID&status=$status';
+  final response = await http.put(
+    Uri.parse(url),
+    headers: header,
+  );
+
+  if (response.statusCode == 200) {
+
+    Fluttertoast.showToast(
+        msg: "Hoàn Tất",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: buttonColor,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  } else {
+    Fluttertoast.showToast(
+        msg: "Đã có lỗi xẩy ra",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: ErorText,
+        textColor: Colors.white,
+        fontSize: 16.0);
   }
 }

@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:intl/intl.dart';
-import '../../blocs/order/orderState.dart';
-import '../../components/button.dart';
 import '../../constants/constants.dart';
 import '../../models/order/order.dart';
 import '../../screens/feedback/feedbackScreen.dart';
@@ -226,19 +224,6 @@ class _ListFeedbackComponentState extends State<ListFeedbackComponent> {
         )
       ],
     )
-        : Row(
-      children: [
-        SizedBox(
-          width: MediaQuery.of(context).size.width - 160,
-          child: const AutoSizeText(NotiOrder1),
-        ),
-        CancelOrderButton(
-          orderid: order.id,
-          phone: order.showStoreModel!.phone,
-          totalPrice: '${f.format(order.total)} đ',
-          status: status,
-        )
-      ],
-    );
+        : const SizedBox();
   }
 }

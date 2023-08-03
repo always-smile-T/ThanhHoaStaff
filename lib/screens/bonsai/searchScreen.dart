@@ -1,23 +1,19 @@
 import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:draggable_fab/draggable_fab.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../blocs/bonsai/bonsai_bloc.dart';
 import '../../blocs/bonsai/bonsai_event.dart';
 import '../../blocs/bonsai/bonsai_state.dart';
-import '../../blocs/bonsai/cart/cart_bloc.dart';
-import '../../blocs/bonsai/cart/cart_state.dart';
 import '../../blocs/bonsai/category/cate_bloc.dart';
 import '../../blocs/bonsai/category/cate_event.dart';
 import '../../blocs/bonsai/category/cate_state.dart';
+import '../../blocs/cart/cart_bloc.dart';
 import '../../components/appBar.dart';
 import '../../components/bonsai/listBonsai_Component.dart';
 import '../../components/cart/cartButton.dart';
-import '../../components/sideBar.dart';
 import '../../constants/constants.dart';
 import '../../models/bonsai/bonsai.dart';
 import '../../models/bonsai/plantCategory.dart';
@@ -337,3 +333,4 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
+

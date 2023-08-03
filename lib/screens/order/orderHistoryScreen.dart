@@ -9,13 +9,9 @@ import '../../blocs/order/orderBloc.dart';
 import '../../blocs/order/orderEvent.dart';
 import '../../blocs/order/orderState.dart';
 import '../../components/appBar.dart';
-import '../../components/button.dart';
-import '../../components/sideBar.dart';
 import '../../constants/constants.dart';
 import '../../models/order/order.dart';
 import '../../providers/order/order_provider.dart';
-import '../../screens/feedback/feedbackScreen.dart';
-import '../../screens/feedback/listFeedbackScreen.dart';
 import '../../screens/order/orderDetail.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
@@ -185,7 +181,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
         itemBuilder: (context, index) {
-          return GestureDetector(
+          return enumStatus[index] == 'WAITING' ? const SizedBox() : GestureDetector(
             onTap: () {
               setState(() {
                 selectedTab = index;
@@ -229,6 +225,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           return const Center(child: CircularProgressIndicator());
         } else if (state is ListOrderSuccess) {
           listOrder = [...state.listOrder!];
+          print("listOrder.length: ${listOrder.length}");
           return listOrder.isEmpty
               ? const Center(
             child: Text('Không tìm thấy đơn hàng'),
@@ -241,6 +238,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             itemCount: listOrder.length,
             itemBuilder: (context, index) {
               return _orderTab(listOrder[index]);
+              //return Text(listOrder[index].progressStatus!.toString());
             },
           );
         } else if (state is OrderFailure) {
@@ -323,22 +321,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.2,
+                      const SizedBox(
                         height: 25,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: AutoSizeText(
-                                converDate(order),
-                                maxLines: 1,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.2,
@@ -400,7 +384,22 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               height: 20,
               thickness: 2,
             ),
-            _bottomRow(order.progressStatus!, order)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                AutoSizeText(
+                  converDate(order),
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontSize: 14,
+                  ),
+                ),
+                //const SizedBox(width: 5,),
+              ],
+            ),
+            const SizedBox(height: 5,),
+            _bottomRow(order.progressStatus!, order),
           ],
         ),
       ),
@@ -408,8 +407,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   Widget _bottomRow(String status, OrderObject order) {
-    return (status == 'RECEIVED')
+    return (status == 'APPROVED')
         ? Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SizedBox(
           width: MediaQuery.of(context).size.width - 160,
@@ -417,41 +417,161 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ),
         GestureDetector(
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const ListFeedbackScreen(),
-            ));
+            setState(() {
+              showdialogConfirm('PACKAGING', order, 'đống gói');
+            });
           },
-          child: Container(
-            alignment: Alignment.center,
-            width: 100,
-            height: 40,
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-                color: buttonColor,
-                borderRadius: BorderRadius.circular(50)),
-            margin:
-            const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-            child: const AutoSizeText('Đánh giá',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontWeight: FontWeight.w800, color: lightText)),
-          ),
+          child: comfirmButton('đóng gói'),
         )
       ],
     )
-        : Row(
+        :
+    (status == 'PACKAGING')
+        ? Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SizedBox(
           width: MediaQuery.of(context).size.width - 160,
-          child: const AutoSizeText(NotiOrder1),
+          child: const AutoSizeText(NotiOrder3),
         ),
-        CancelOrderButton(
-          orderid: order.id,
-          phone: order.showStoreModel!.phone,
-          totalPrice: '${f.format(order.total)} đ',
-          status: status,
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              showdialogConfirm('DELIVERING', order, 'Giao hàng');
+            });
+          },
+          child: comfirmButton('Giao hàng'),
+        )
+      ],
+    ):(status == 'DELIVERING')
+        ? Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width - 160,
+          child: const AutoSizeText(NotiOrder4),
+        ),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              setState(() {
+                showdialogConfirm('RECEIVED', order, 'Đã nhận');
+              });
+
+            });
+          },
+          child: comfirmButton('Đã nhận'),
+        )
+      ],
+    ):
+    (status == 'RECEIVED')
+        ?  Row(
+      children: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width - 80,
+          child: const AutoSizeText(NotiOrder5),
+        )
+      ],
+    ):
+    (status == 'APPROVED')
+        ?  Row(
+      children: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width - 80,
+          child: const AutoSizeText(NotiOrder1),
+        )
+      ],
+    ):
+    Row(
+      children: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width - 80,
+          child: const AutoSizeText(NotiOrder6),
         )
       ],
     );
   }
+
+  Widget comfirmButton (title) {
+    return Container(
+      alignment: Alignment.center,
+      width: 100,
+      height: 40,
+      //padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+          color: buttonColor,
+          borderRadius: BorderRadius.circular(50)),
+      //margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+      child: AutoSizeText(title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              fontWeight: FontWeight.w800, color: lightText)),
+    );
+  }
+
+  dynamic showdialogConfirm(String status, OrderObject order, confirmStatus) {
+    var size = MediaQuery.of(context).size;
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Center(
+              child: Text(
+                'Tiến hành ' + confirmStatus,
+                style: const TextStyle(color: buttonColor, fontSize: 25),
+              ),
+            ),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Quay lại',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      ChangeStatusOrder(order.id, status);
+                      Navigator.pop(context);
+                      setState(() {});
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Xác nhận',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                ],
+              )
+            ],
+          );
+        });
+  }
+
 }

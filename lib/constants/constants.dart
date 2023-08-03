@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../models/order/order.dart';
+import '../utils/format/date.dart';
 
 // const String GG_API_Key = 'AIzaSyA2yiHIRWwyTMebbwJmYDiQcN6AZxpyvrI';
 const String GG_API_Key = 'AIzaSyCGhBhR1KfeRlTi_vn8vD8SZEmO1pr-74I';
@@ -63,9 +64,6 @@ String convertStatus(String value) {
     case "ALL":
       result = 'Tất cả';
       break;
-    case "WAITING":
-      result = 'Chờ xác nhận';
-      break;
     case "APPROVED":
       result = 'Đã xác nhận';
       break;
@@ -81,11 +79,8 @@ String convertStatus(String value) {
     case "RECEIVED":
       result = 'Đã nhận';
       break;
-    case "STAFFCANCELED":
-      result = 'Đã bị Hủy';
-      break;
     case "CUSTOMERCANCELED":
-      result = 'Đã huỷ';
+      result = 'Khách huỷ';
       break;
   }
   return result;
@@ -110,28 +105,25 @@ String converDate(OrderObject order) {
   String result = order.createdDate.toString().substring(0, 10);
   switch (order.progressStatus) {
     case "WAITING":
-      result = order.createdDate.toString().substring(0, 10);
+      result = 'Đang cập nhật';
       break;
     case "APPROVED":
-      result = order.approveDate.toString().substring(0, 10);
+      result = formatDate(order.approveDate.toString());
       break;
     case "DENIED":
-      result = order.rejectDate.toString().substring(0, 10);
+      result = formatDate(order.rejectDate.toString());
       break;
     case "PACKAGING":
-      result = order.packageDate.toString().substring(0, 10);
+      result = formatDate(order.packageDate.toString());
       break;
     case "DELIVERING":
-      result = order.deliveryDate.toString().substring(0, 10);
+      result = formatDate(order.deliveryDate.toString());
       break;
     case "RECEIVED":
-      result = order.receivedDate.toString().substring(0, 10);
-      break;
-    case "STAFFCANCELED":
-      result = order.rejectDate.toString().substring(0, 10);
+      result = formatDate(order.receivedDate.toString());
       break;
     case "CUSTOMERCANCELED":
-      result = order.rejectDate.toString().substring(0, 10);
+      result = formatDate(order.rejectDate.toString());
       break;
   }
   return result;
@@ -140,9 +132,17 @@ String converDate(OrderObject order) {
 const NoIMG =
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyRE2zZSPgbJThiOrx55_b4yG-J1eyADnhKw&usqp=CAU';
 
-const NotiOrder1 = 'Thường xuyên theo dỗi đơn hàng của bạn nhé !!!';
+const NotiOrder1 = 'Nhớ cập nhật đơn hàng cho khách của bạn nhé !!!';
 const NotiOrder2 =
-    'Gửi đánh giá của bạn về dịch vụ của Thanh Hoa để chúng tôi có thể mang đến trải nghiệm tốt hơn cho bạn.';
+    'Tiến hành đống gói.';
+const NotiOrder3 =
+    'Tiến hành giao hàng.';
+const NotiOrder4 =
+    'Xác nhận khách đã nhận.';
+const NotiOrder5 =
+    'Bạn đã hoàn thành đơn hàng xuất sắc.';
+const NotiOrder6 =
+    'Đơn hàng này đã không còn tồn tại.';
 
 List<String> listReason() {
   return [
@@ -160,4 +160,24 @@ List<String> listReason() {
 String getDate(String date) {
   DateTime parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(date);
   return date = DateFormat('MM/dd/yyyy hh:mm a').format(parseDate);
+}
+
+String formatDateStartDateContact(String date) {
+  DateTime parseDate = DateFormat("dd/MM/yyyy").parse(date);
+  return date = DateFormat('yyyy-MM-dd').format(parseDate);
+}
+
+String formatDate1(DateTime date) {
+  String result;
+  return result = DateFormat('dd/MM/yyyy').format(date);
+}
+
+var f = NumberFormat("###,###,###", "en_US");
+String setPriceService(double price, int type, int pack, int months) {
+  return f.format(price * months + (price * type / 100) - (price * pack / 100));
+}
+
+int countMonths(DateTime date1, DateTime date2) {
+  int months = (date2.difference(date1).inDays / 31).ceil();
+  return months;
 }

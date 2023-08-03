@@ -4,8 +4,8 @@ import 'dart:async';
 
 import '../../models/bonsai/bonsai.dart';
 import '../../providers/bonsai/bonsai_provider.dart';
-import 'bonsai_event.dart';
-import 'bonsai_state.dart';
+import '../../blocs/bonsai/bonsai_event.dart';
+import '../../blocs/bonsai/bonsai_state.dart';
 class BonsaiBloc {
   final BonsaiProvider _BonsaiProvider;
   final StreamController<BonsaiState> _BonsaiStateController =
@@ -60,4 +60,3 @@ class BonsaiBloc {
     _BonsaiStateController.close();
   }
 }
-

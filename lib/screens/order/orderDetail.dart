@@ -2,7 +2,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../components/appBar.dart';
-import '../../components/button.dart';
 import '../../components/note.dart';
 import '../../constants/constants.dart';
 import '../../models/cart/cart.dart';
@@ -375,7 +374,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         Container(
           padding: const EdgeInsets.all(10),
           child: Text(
-            widget.order.showCustomerModel!.address,
+            widget.order.address,
             style: const TextStyle(color: darkText, fontSize: 16),
           ),
         ),
@@ -438,16 +437,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   color: priceColor,
                   fontSize: 16,
                   fontWeight: FontWeight.w500)),
-          const Spacer(),
+          /*const Spacer(),
           (isloading)
               ? Container()
-              : Container(child: _bottomRow(widget.order.progressStatus))
+              : Container(child: _bottomRow(widget.order.progressStatus))*/
         ],
       ),
     );
   }
 
-  Widget _bottomRow(String status) {
+  /*Widget _bottomRow(String status) {
     return (status == 'RECEIVED')
         ? Row(
       children: [
@@ -475,16 +474,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         )
       ],
     )
-        : Row(
-      children: [
-        CancelOrderButton(
-          orderid: widget.order.id,
-          phone: widget.order.showStoreModel!.phone,
-          totalPrice:
-          '${f.format(totalplantPrice + totalplantShip + totalShipPrice)} đ',
-          status: status,
-        )
-      ],
-    );
-  }
+        : const SizedBox();
+  }*/
 }

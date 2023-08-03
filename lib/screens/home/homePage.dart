@@ -19,6 +19,7 @@ import '../authentication/loginPage.dart';
 import '../authentication/manaProfilePage.dart';
 import '../contract/contractPage.dart';
 import '../notification/notificationPage.dart';
+import '../order/orderHistoryScreen.dart';
 import '../schedule/schedulePage.dart';
 import '../service/servicePage.dart';
 
@@ -69,6 +70,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    print("avata link: "+ widget.user!.avatar);
     var size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: background,
@@ -79,7 +81,7 @@ class _HomePageState extends State<HomePage> {
               height: 200,),
             //Nghiep vu in Store List
             Container(
-              padding: EdgeInsets.all(15),
+              padding: const EdgeInsets.all(15),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,6 +99,14 @@ class _HomePageState extends State<HomePage> {
                         ));
                       },
                       child: _dashboardButton('Cây Cảnh')),
+                  const SizedBox(height: 20,),
+                  GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const OrderHistoryScreen(),
+                        ));
+                      },
+                      child: _dashboardButton('Đơn đã đặt')),
                   const SizedBox(height: 20,),
                   GestureDetector(
                     onTap: (){
@@ -162,7 +172,7 @@ class _HomePageState extends State<HomePage> {
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black)),
-                  const SizedBox(height: 20,),
+                  /*const SizedBox(height: 20,),
                   GestureDetector(
                     onTap: (){
                       Navigator.of(context).push(MaterialPageRoute(
@@ -170,7 +180,7 @@ class _HomePageState extends State<HomePage> {
                       ));
                     },
                     child: _dashboardButton('Khách Hàng Đánh Giá'),
-                  ),
+                  ),*/
                   const SizedBox(height: 20,),
                   GestureDetector(
                     onTap: (){
@@ -179,7 +189,7 @@ class _HomePageState extends State<HomePage> {
                           builder: (context) => const LoginPage()));
                     },
                     child: _dashboardButton('Đổi Tài Khoản'),
-                  ),
+                  ),/*
                   const SizedBox(height: 20,),
                   GestureDetector(
                     onTap: (){
@@ -187,17 +197,8 @@ class _HomePageState extends State<HomePage> {
                         builder: (context) => const CreateReportPage(),
                       ));
                     },
-                    child: _dashboardButton('Tạo Báo Cáo'),
-                  ),
-                  const SizedBox(height: 20,),
-                  GestureDetector(
-                    onTap: (){
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const ReportPage(),
-                      ));
-                    },
-                    child: _dashboardButton('Xem Báo Cáo'),
-                  ),
+                    child: _dashboardButton('Test Cửa Hàng'),
+                  ),*/
                 ],
               ),
             ),
@@ -242,7 +243,7 @@ class _HomePageState extends State<HomePage> {
                           child:
                           CircleAvatar(
                             radius: 15,
-                            backgroundImage: widget.user!.avatar != null ? NetworkImage(widget.user!.avatar) : const NetworkImage(getImageNoAvailableURL),
+                            backgroundImage: NetworkImage(widget.user!.avatar),
                           ),
                         ),
                         const SizedBox(width: 10,),
@@ -268,10 +269,10 @@ class _HomePageState extends State<HomePage> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Staff'),
+                                    const Text('Nhân viên'),
                                     Text(widget.user!.address),
                                     Text(widget.user!.phone),
-                                    Text(widget.user!.status),
+                                    Text(widget.user!.status == 'ACTIVE' ? 'Đang hoạt động' : 'Tạm dừng'),
                                   ],
                                 )
                               ],

@@ -21,7 +21,7 @@ Map<String, String> headerLogin = {
 const mainURL = 'https://thanhhoagarden.herokuapp.com';
 
 //User
-const loginWithUsernamePasswordURL = '/user/login?';
+const loginWithUsernamePasswordURL = '/user/login';
 const loginWithGGorPhoneURL = '/user/loginWithEmailOrPhone?';
 const registerURL = '/user/register';
 const updatefcmTokenURL = '/user/createFcmToken';
@@ -37,6 +37,9 @@ const getAllCategoryURL = '/category';
 
 //service
 const getServiceURL = '/service?pageNo=0&pageSize=100&sortBy=ID&sortAsc=true';
+
+//servicePack
+const getServicePackURL = '/servicePack';
 
 
 //contractDetail
@@ -77,6 +80,7 @@ const getOrderDetaiByFeedbackStatuslURL = '/order/getOrderDetailByIsFeedback?';
 
 //store
 const storeURL = '/store';
+const storeIdURL = '/store/getByID?';
 
 //Distance Price
 const distanceURL = '/distancePrice';

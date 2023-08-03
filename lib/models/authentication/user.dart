@@ -6,7 +6,7 @@ import 'package:thanhhoa_garden_staff_app/models/authentication/role.dart';
 import '../../constants/constants.dart';
 
 class User {
-  late final id;
+  late final userID;
   late final address;
   late final avatar;
   late final email;
@@ -17,9 +17,10 @@ class User {
   late final status;
   late final username;
   late Role? role;
+  late final storeID;
 
   User(
-      {this.id,
+      {this.userID,
         this.phone,
         this.status,
         this.username,
@@ -29,10 +30,11 @@ class User {
         this.email,
         this.fullName,
         this.gender,
-        this.role});
+        this.role,
+        this.storeID});
 
   User.login(Map<String, dynamic> json, Role role) {
-    id = json['id'];
+    userID = json['userID'];
     address = json['address'];
     avatar = json['avatar'];
     email = json['email'];
@@ -42,20 +44,22 @@ class User {
     phone = json['phone'];
     status = json['status'];
     username = json['username'];
+    storeID = json['storeID'];
     role = role;
   }
   User.fetchInfo(Map<String, dynamic> json) {
-    id = json['id'];
+    userID = json['userID'];
     address = json['address'];
     email = json['email'];
     fullName = json['fullName'];
     phone = json['phone'];
     avatar = json['avatar'] ?? NoIMG;
+    storeID = json['storeID'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
+    data['userID'] = userID;
     data['phone'] = phone;
     data['password'] = password;
     data['username'] = username;
@@ -64,6 +68,7 @@ class User {
     data['address'] = address;
     data['avatar'] = avatar;
     data['email'] = email;
+    data['storeID']= storeID;
 
     return data;
   }

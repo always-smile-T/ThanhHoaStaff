@@ -20,7 +20,7 @@ class ListFeebback extends StatefulWidget {
 }
 
 class _ListFeebbackState extends State<ListFeebback> {
-  //User user = getCuctomerIDFromSharedPrefs();
+  //User? user = getCuctomerIDFromSharedPrefs();
   @override
   void initState() {
     // TODO: implement initState
@@ -78,7 +78,7 @@ class _ListFeebbackState extends State<ListFeebback> {
                             width: 145,
                             child: AutoSizeText(
                               (widget.wherecall == 'OrderFeedback')
-                                  ? feedback.showCustomerModel!.fullName
+                                  ? feedback.showCustomerModel!.fullName //user.fullName
                                   : feedback.showCustomerModel!.fullName,
                               maxLines: 1,
                               style: const TextStyle(

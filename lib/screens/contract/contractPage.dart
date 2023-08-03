@@ -100,7 +100,7 @@ class _ContractPageState extends State<ContractPage> {
                 controller: _scrollController,
                 shrinkWrap: true,
                 itemCount: contract.length,
-                itemBuilder: (BuildContext context, int index) {
+                itemBuilder: (BuildContext context, int index){
                   return ((contract[index].status == 'WORKING' && selectedTab == 0) ||
                       ((contract[index].status == 'DENIED' || (contract[index].status == 'STAFFCANCELED') || (contract[index].status == 'CUSTOMERCANCELED')) && selectedTab == 3) ||
                       (contract[index].status == 'SIGNED' && selectedTab == 4) ||
@@ -115,7 +115,7 @@ class _ContractPageState extends State<ContractPage> {
                     child: Container(height: 180,
                       width: size.width - 200,
                       margin: const EdgeInsets.all(10),
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
                           color: barColor,
                           border: Border.all(width: 1),
@@ -137,22 +137,29 @@ class _ContractPageState extends State<ContractPage> {
                                               width: 3, color: Colors.white)),
                                       width: 80,
                                       height: 80,
-                                      child: contract[index].imgList != null ? Image.network(contract[index].imgList.toString(), fit: BoxFit.fill,) : Image.network(getImageNoAvailableURL, fit: BoxFit.fill)
+                                      child: contract[index].imgList != null ? Image.network(contract[index].imgList![0].imgUrl.toString(), fit: BoxFit.fill,) : Image.network(getImageNoAvailableURL, fit: BoxFit.fill)
                                   ),
-                                  // Name of Cus
                                   const SizedBox(height: 10,),
-                                 _contractFiled('Tên',contract[index].fullName.toString()),
+                                  _contractFiled('ID',contract[index].id.toString()),
                                 ],
                               ),
                               const SizedBox(
-                                width: 30,
+                                width: 7,
+                              ),
+                              Container(
+                                width: 1,
+                                height: 110,
+                                decoration: const BoxDecoration(color: Colors.black54),
+                              ),
+                              const SizedBox(
+                                width: 7,
                               ),
                               // Basic Info about Contract
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(contract[index].title.toString(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
+                                  AutoSizeText(contract[index].title.toString(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
                                   const SizedBox(
                                     height: 10,
                                   ),
@@ -160,12 +167,12 @@ class _ContractPageState extends State<ContractPage> {
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      _contractFiled('ID hợp đồng',contract[index].id.toString()),
+                                      _contractFiled('Khách hàng',contract[index].fullName.toString().length >= 25 ? (contract[index].fullName.toString().substring(0,22) + "...") : contract[index].fullName.toString()),
                                       _contractFiled('Ngày bắt đầu',formatDatenoTime(contract[index].startedDate.toString())),
                                       _contractFiled('Ngày kết thúc',formatDatenoTime(contract[index].endedDate.toString())),
                                       _contractFiled('Giá trị hợp đồng','${f.format(contract[index].total)} đ'),
                                       _contractFiled('Trạng thái', formatStatus(contract[index].status.toString())),
-                                      _contractFiled('Địa chỉ',contract[index].address.toString().length >= 25 ? (contract[index].address.toString().substring(0,25) + "...") : contract[index].address.toString()),
+                                      _contractFiled('Địa chỉ',contract[index].address.toString().length >= 25 ? (contract[index].address.toString().substring(0,22) + "...") : contract[index].address.toString()),
                                     ],
                                   ),
                                 ],
@@ -228,7 +235,15 @@ class _ContractPageState extends State<ContractPage> {
   Widget _contractFiled(String title, String des) {
     return Column(
       children: [
-        Text(title + ': ' + des , style: const TextStyle(fontSize: 12),),
+        RichText(
+            text: TextSpan(children: [
+              TextSpan(
+                text: title + ': ',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black),),
+              TextSpan(
+                text: des,
+                style: const TextStyle(fontSize: 12, color: Colors.black),),
+            ])),
         const SizedBox(
           height: 5,
         ),
