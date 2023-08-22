@@ -1,9 +1,10 @@
 // ignore_for_file: await_only_futures, unnecessary_null_comparison
-
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:thanhhoa_garden_staff_app/providers/notification/google_notification_provider.dart';
 //import '../../blocs/AppBlocObserver%20.dart';
 import '../../blocs/authentication/auth_bloc.dart';
 import '../../blocs/bonsai/bonsai_bloc.dart';
@@ -23,13 +24,20 @@ import '../../providers/feedback/feedback_provider.dart';
 import '../../providers/order/order_provider.dart';
 import '../../providers/service/service_provider.dart';
 import '../../providers/store/store_provider.dart';
-// import 'package:thanhhoa_garden/screens/MyHomePage.dart';
+import 'firebase_options.dart';
 import '../../screens/authentication/loginPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../screens/home/homePage.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import '../../utils/helper/shared_prefs.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async{
+  await Firebase.initializeApp();
+}
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
 
 late SharedPreferences sharedPreferences;
 // late AuthBloc authBloc;
@@ -38,24 +46,63 @@ List<Bonsai> Listincart = [];
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   sharedPreferences = await SharedPreferences.getInstance();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-  // Bloc.observer = AppBlocObserver();
-  // authBloc = AuthBloc(authProvider: AuthenticationProvider());
-  // await FirebaseAuth.instance.authStateChanges().listen((User? user) {
-  //   if (user == null) {
-  //     print('User is currently signed out!');
-  //   } else {
-  //     print('User is signed in!');
-  //   }
-  // });
+
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+  String? token = await messaging.getToken(
+    vapidKey: "BGpdLRs......",
+  );
+  print('tokenNoti: ' + token.toString());
+  Future<void> _showNotification(RemoteNotification notification) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+    NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0, // ID của thông báo
+      notification.title,
+      notification.body,
+      platformChannelSpecifics,
+    );
+  }
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    print('message data: ' + message.data.toString());
+
+    if (message.notification != null) {
+      print('notifi: ' + message.notification.toString());
+      await _showNotification(message.notification!);
+    }
+  });
 
   initializeDateFormatting('vi_VN');
-  runApp(const MyApp());
+  runApp( MyApp(notiToken: token.toString()));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.notiToken});
+  final notiToken;
 
   // This widget is the root of your application.
   @override
@@ -64,6 +111,7 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<GoogleNotiProvide>(create: (_) => GoogleNotiProvide()),
         ListenableProvider<AuthenticationProvider>(
             create: (_) => AuthenticationProvider()),
         ListenableProvider<ServiceProvider>(create: (_) => ServiceProvider()),
@@ -105,7 +153,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.cyan,
         ),
         debugShowCheckedModeBanner: false,
-        home: const LoginPage(),
+        home: LoginPage(notiToken: notiToken),
       ),
     );
   }

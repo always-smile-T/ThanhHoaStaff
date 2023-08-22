@@ -1,9 +1,12 @@
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path/path.dart';
 import 'package:async/async.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter/material.dart';
+import '../constants/constants.dart';
 
 class ImgProvider {
   Future<String> upload(File imageFile) async {
@@ -33,7 +36,16 @@ class ImgProvider {
     // listen for response
     await response.stream.transform(utf8.decoder).listen((value) async {
       result = value;
+      Fluttertoast.showToast(
+          msg: "Hoàn Tất Chọn Ảnh",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: buttonColor,
+          textColor: Colors.white,
+          fontSize: 16.0);
     });
+    print('result: ' +result);
 
     return result;
   }

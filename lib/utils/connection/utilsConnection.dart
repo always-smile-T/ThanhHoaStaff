@@ -48,6 +48,7 @@ const getAllContractDetailURL = '/contract/getContractDetailByStaffToken';
 
 //contract
 const getContractURL = '/contract/byCustomerToken?Staff%20%2F%20Customer=Staff';
+const getAContractURL = '/contract/getByID?contractID=';
 
 //ImageNoAvailable
 const getImageNoAvailableURL = 'https://t3.ftcdn.net/jpg/03/34/83/22/360_F_334832255_IMxvzYRygjd20VlSaIAFZrQWjozQH6BQ.jpg';
@@ -91,3 +92,8 @@ const orderStatus = '/enum/order';
 //report
 const createReportURL = '/report';
 const getReportByToken = '/report/getByCustomerToken';
+
+//noti
+const notificationURL = '/notification';
+const checkReadOneURL = '/notification/isRead?notificationID=';
+const checkReadAllURL = '/notification/isReadByToken';

@@ -1,7 +1,24 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
+import 'package:thanhhoa_garden_staff_app/utils/format/date.dart';
+import '../../blocs/order/orderBloc.dart';
+import '../../blocs/order/orderEvent.dart';
+import '../../blocs/order/orderState.dart';
 import '../../components/appBar.dart';
+import '../../components/circular.dart';
+import '../../components/notfication/notification_component.dart';
+import '../../components/notfication/read_all_component.dart';
 import '../../constants/constants.dart';
+import '../../models/contract/contract.dart';
+import '../../models/notification/notification.dart';
+import '../../models/order/order.dart';
+import '../../providers/contract/contract_provider.dart';
+import '../../providers/notification/notification_provider.dart';
+import '../contract/contractPageDetail.dart';
+import '../order/orderDetail.dart';
+
+
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({Key? key}) : super(key: key);
@@ -10,7 +27,39 @@ class NotificationPage extends StatefulWidget {
   State<NotificationPage> createState() => _NotificationPageState();
 }
 
+final ScrollController _scrollController = ScrollController();
+
 class _NotificationPageState extends State<NotificationPage> {
+ /* late OrderBloc orderBloc;
+  late Stream<OrderState> orderStream;
+  late OrderObject order;*/
+
+
+  void initState() {
+    /*orderBloc = Provider.of<OrderBloc>(context, listen: true);
+    orderStream = orderBloc.authStateStream;*/
+    // TODO: implement initState
+    super.initState();
+  }
+
+/*  _getOrder(
+      String id,
+      ) {
+    orderBloc.send(GetAnOrderEvent(
+      order: order,
+      id: id,
+    ));
+  }*/
+/*
+  @override
+  void dispose() {
+    orderBloc.dispose();
+    // TODO: implement dispose
+    super.dispose();
+  }*/
+
+
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -31,65 +80,55 @@ class _NotificationPageState extends State<NotificationPage> {
             height: 10,
             decoration: const BoxDecoration(color: divince),
           ),
-          //Noti Field
-          Expanded(child: Column(
-            children: [
-              _listNoti('Bạn có một đánh giá mới','19:00 03/07/2023',false),
-              _listNoti('Bạn nhận được một báo cáo','20:00 02/07/2023',true),
-              _listNoti('Bạn nhận được 1 hợp đồng mới','09:00 01/07/2023',false),
-              _listNoti('Hôm nay có lịch chăm sóc cây, đừng quên!','07:00 20/06/2023',false),
-              _listNoti('Hôm nay có lịch chăm sóc cây, đừng quên!','07:00 27/06/2023',true),
-            ],
-          )),
+          Expanded(child: _listNoti()),
         ]),
       ),
     );
   }
 
-  //noti Component
-  Widget _listNoti(des, time, isClick){
-    return Container(
-      padding: const EdgeInsets.all(10),
-      height: 80,
-      decoration: BoxDecoration(
-          color: isClick ? barColor : notiColor,
-        border: Border.all(width: 1, color: divince)
-      ),
-      child: Stack(
-        children: [
-          Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                        width: 3, color: Colors.white)),
-                width: 70,
-                height: 70,
-                child:
-                const CircleAvatar(
-                  radius: 15,
-                  backgroundImage: AssetImage('assets/Logo.png'),
-                ),
-              ),
-              const SizedBox(width: 10,),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(des),
-                  const SizedBox(width: 5,),
-                  const Text('đến xem')
-                ],
-              )
-            ],
-          ),
-          Positioned(
-            bottom: 0,
-              right: 0,
-              child: Text(time))
-        ],
-      ),
+  Widget _listNoti(){
+    return Stack(
+      children: [
+        FutureBuilder<List<Noty>>(
+          future: fetchNotification(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Circular();
+            }
+            if (snapshot.hasData) {
+              List<Noty> noty = snapshot.data!;
+              if (snapshot.data == null) {
+                return const Center(
+                  child: Text(
+                    'Không có kết quả để hiển thị',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                );
+              } else {
+                return ListView.builder(
+                    //padding: const EdgeInsets.symmetric(horizontal: 18),
+                    //scrollDirection: Axis.horizontal,
+                    controller: _scrollController,
+                    shrinkWrap: true,
+                    itemCount: noty.length,
+                    itemBuilder: (BuildContext context, int index){
+                      return NotificationComponent(noty: noty[index]);
+                    }
+                );
+              }
+            }
+            return const Center(
+              child: Text('Error'),
+            );
+          },
+        ),
+    Positioned(
+        right: MediaQuery.of(context).size.width / 2 - 70,
+      bottom: 10,
+        child: ReadALlComponent(title: 'đánh dâu đã đọc'))
+      ],
     );
   }
+
 }
+

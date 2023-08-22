@@ -84,7 +84,7 @@ class _SchedulePageState extends State<SchedulePage> {
           //Working List
           Expanded(child: selectedTab == 2 ? _listSchedule() :
           selectedTab == 0 ? _listJobToday() :
-          _ScheduleFollowWeek(),),
+          const CanlenderComponent(),),
         ]),
       ),
     );
@@ -170,12 +170,10 @@ class _SchedulePageState extends State<SchedulePage> {
                                           _contractFiled('Ngày làm việc',date[index].timeWorking.toString()),
                                           _contractFiled('Chú ý',date[index].note.toString()),
                                           _contractFiled(
-                                              date[index].serviceTypeID.toString() == 'ST005' ? 'Kích thước vườn' :
-                                              date[index].serviceTypeID.toString() == 'ST006' ? 'Kích thước vườn' :
-                                              date[index].serviceTypeID.toString() == 'ST007' ? 'Kích thước vườn' :
-                                              date[index].serviceTypeID.toString() == 'ST008' ? 'Kích thước vườn' : 'Chiều cao cây'
+                                              date[index].serviceID.toString() == 'SE001' ? 'Chiều cao cây' :
+                                              date[index].serviceTypeID.toString() == 'SE002' ? 'Chiều cao cây' :'Kích thước vườn'
                                               ,date[index].typeSize.toString()),
-                                          _contractFiled('Thời gian',date[index].packRange.toString()),
+                                          _contractFiled('Thời gian',date[index].packRange.toString() + ' ' + date[index].packRange.toString()),
                                           const SizedBox(
                                             height: 5,
                                           ),
@@ -358,14 +356,11 @@ class _SchedulePageState extends State<SchedulePage> {
                     if (days_list[i] == weekday){
                       bool checkOk = false;
                            return GestureDetector(
-                             //1215
-                        // need to fix ... sai logic roi
                         onTap: () async{
-                          /*List<Contract> contract = await fetchContract(0, 10, 'ID', true);
+                          Contract contract = await fetchAContract(cD[index].showContractModel!.id);
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ContractDetailPage(contract: contract[index] ,contractID: contract[index].id),
-                      ));*/
-                          print("need to fix ... sai logic roi");
+                        builder: (context) => ContractDetailPage(contract: contract ,contractID: contract.id),
+                      ));
                         },
                         child: Column(
                           children: [
@@ -533,15 +528,6 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  //List Working follow weekday
-  Widget _ScheduleFollowWeek(){
-    DateTime now = DateTime.now();
-    String weekday = getWeekday(now.weekday);
-    String titleTime = weekday + ', ' + now.day.toString() + '-' + now.month.toString() + '-' + now.year.toString();
-    print(titleTime);
-    var size = MediaQuery.of(context).size;
-    return CanlenderComponent();
-  }
 
   //List main category
   List <String> tab = [

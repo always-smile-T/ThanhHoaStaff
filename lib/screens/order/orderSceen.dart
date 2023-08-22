@@ -60,14 +60,10 @@ class _OrderScreenState extends State<OrderScreen> {
   AuthenticationProvider _authenticationProvider = AuthenticationProvider();
   StoreProvider _storeProvider = StoreProvider();
   OrderProvider _orderProvider = OrderProvider();
-  String storeAdress = '';
-  String storeName = '';
   List<Store> listStore = [];
   UserObj.User? user;
   Distance distancePrice = Distance();
   bool isFT = true;
-  String receiptIMG = 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTar7ByGunwRPJavdgAR9qWbvcEgebw2kDB5Q&usqp=CAU';
-
   Map<String, dynamic> listDistance = {};
   Map<String, dynamic> storeDistance = {};
   Map<String, dynamic> distance = {};
@@ -181,6 +177,7 @@ class _OrderScreenState extends State<OrderScreen> {
     Distance[thekey] = double.parse((thevalue / 1000).toStringAsFixed(1));
     return Distance;
   }
+
 
   Future<double> getDistance(LatLng origin, LatLng destination) async {
     double distance = 0.0;
@@ -322,7 +319,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 plant.add(data.toJson());
               }
               var data = order.createOrder(plant, distance.keys.first,
-                  distancePrice.distancePriceID, user!.userID, '', receiptIMG);
+                  distancePrice.distancePriceID, user!.userID, '');
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
@@ -529,11 +526,9 @@ class _OrderScreenState extends State<OrderScreen> {
                                       backgroundColor: buttonColor,
                                       textColor: Colors.white,
                                       fontSize: 16.0);
-                                  Navigator.of(context)
-                                      .pushReplacement(MaterialPageRoute(
-                                    builder: (context) =>
-                                    const OrderHistoryScreen(),
-                                  ));
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
                                 } else {
                                   Fluttertoast.showToast(
                                       msg: "Tạo Đơn Hàng Thất Bại",

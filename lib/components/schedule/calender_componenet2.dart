@@ -1,16 +1,8 @@
-
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:table_calendar/table_calendar.dart';
 import 'package:thanhhoa_garden_staff_app/constants/constants.dart';
-
 import '../../models/contract/contractDetail/contract_detail.dart';
-import '../../models/workingDate/scheduleToday/schedule_today.dart';
 import '../../providers/schedule/schedule_provider.dart';
-import '../../utils/format/date.dart';
 import '../circular.dart';
 
 
@@ -36,7 +28,7 @@ class _CanlenderComponentState extends State<CanlenderComponent> {
           TableCalendar(
             locale: 'vi_VN',
             rowHeight: 35,
-            headerStyle: HeaderStyle(formatButtonVisible: false, titleCentered: true),
+            headerStyle: const HeaderStyle(formatButtonVisible: false, titleCentered: true),
             availableGestures: AvailableGestures.all,
             selectedDayPredicate: (day) => isSameDay(day, today),
             onDaySelected: _onDateSelected,
@@ -74,9 +66,9 @@ class _CanlenderComponentState extends State<CanlenderComponent> {
                         scrollDirection: Axis.vertical,
                         padding: EdgeInsets.zero,
                         itemBuilder: (context, index) {
-                          List days_list = (schedule[index].timeWorking.toString().split(", "));
-                          for(int i = 0; i < days_list.length; i++ ){
-                            if(days_list[i] == getWeekday(today.weekday)){
+                          List daysList = (schedule[index].timeWorking.toString().split(", "));
+                          for(int i = 0; i < daysList.length; i++ ){
+                            if(daysList[i] == getWeekday(today.weekday)){
                               return Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +82,7 @@ class _CanlenderComponentState extends State<CanlenderComponent> {
                                         children: [
                                           Row(
                                             children: [
-                                              Text(schedule[index].showContractModel!.title.toString() + ' - ', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),),
+                                              Text('${schedule[index].showContractModel!.title} - ', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),),
                                               Text(schedule[index].showServiceModel!.name.toString(), style: const TextStyle(fontSize: 12),),
                                             ],
                                           ),
@@ -136,7 +128,7 @@ class _CanlenderComponentState extends State<CanlenderComponent> {
       children: [
         Row(
           children: [
-            Text(title + ': ', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+            Text('$title: ', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
             Text(des , style: const TextStyle(fontSize: 12),),
           ],
         ),

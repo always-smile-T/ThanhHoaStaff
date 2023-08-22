@@ -31,6 +31,8 @@ class OrderObject {
   late Store? showStoreModel;
   late OrderCart? showPlantModel;
   late final totalPage;
+  late final isPaid;
+  late final receiptIMG;
 
   OrderObject({
     this.id,
@@ -59,6 +61,8 @@ class OrderObject {
     this.showPlantModel,
     this.totalPage,
     this.numOfPlant,
+    this.isPaid,
+    this.receiptIMG
   });
 
   OrderObject.fromJson(
@@ -95,10 +99,12 @@ class OrderObject {
     showDistancePriceModel = DistancePriceModel;
     showStoreModel = StoreModel;
     showPlantModel = PlantModel;
+    isPaid = json["isPaid"];
+    receiptIMG = json["receiptIMG"];
   }
 
   Map<String, dynamic> createOrder(List<Map<String, dynamic>> plant,
-      String StoreID, String DistancePriceID, staffID,latLong, receiptIMG) {
+      String StoreID, String DistancePriceID, staffID,latLong) {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['fullName'] = fullName;
     data['email'] = email;
@@ -111,7 +117,6 @@ class OrderObject {
     data['detailList'] = plant;
     data['staffID'] = staffID;
     data['latLong'] = latLong;
-    data['receiptIMG'] = receiptIMG;
     data['isPaid'] = true;
     return data;
   }

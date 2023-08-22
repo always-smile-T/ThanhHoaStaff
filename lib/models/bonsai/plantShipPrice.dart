@@ -1,5 +1,4 @@
 // ignore_for_file: file_names, prefer_typing_uninitialized_variables, non_constant_identifier_names
-
 class PlantShipPrice {
   late final id;
   late final potSize;
@@ -13,3 +12,4 @@ class PlantShipPrice {
     pricePerPlant = json["pricePerPlant"];
   }
 }
+

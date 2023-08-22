@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../blocs/bonsai/bonsai_bloc.dart';
 import '../../blocs/bonsai/bonsai_event.dart';
 import '../../blocs/bonsai/bonsai_state.dart';
+
 import '../../blocs/bonsai/category/cate_bloc.dart';
 import '../../blocs/bonsai/category/cate_event.dart';
 import '../../blocs/bonsai/category/cate_state.dart';
@@ -14,6 +15,7 @@ import '../../blocs/cart/cart_bloc.dart';
 import '../../components/appBar.dart';
 import '../../components/bonsai/listBonsai_Component.dart';
 import '../../components/cart/cartButton.dart';
+import '../../components/sideBar.dart';
 import '../../constants/constants.dart';
 import '../../models/bonsai/bonsai.dart';
 import '../../models/bonsai/plantCategory.dart';
@@ -162,6 +164,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     return Scaffold(
+      //drawer: SideBar(),
       backgroundColor: background,
       floatingActionButton: Builder(builder: (context) {
         return const CartButton();
@@ -333,4 +336,3 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
-

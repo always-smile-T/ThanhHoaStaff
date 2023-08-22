@@ -94,6 +94,7 @@ class _ContractPageState extends State<ContractPage> {
               ),
             );
           } else {
+            print("contract.length: " + contract.length.toString());
             return ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 //scrollDirection: Axis.horizontal,
@@ -137,7 +138,7 @@ class _ContractPageState extends State<ContractPage> {
                                               width: 3, color: Colors.white)),
                                       width: 80,
                                       height: 80,
-                                      child: contract[index].imgList != null ? Image.network(contract[index].imgList![0].imgUrl.toString(), fit: BoxFit.fill,) : Image.network(getImageNoAvailableURL, fit: BoxFit.fill)
+                                      child: contract[index].imgList != null ? Image.network(contract[index].imgList!.length == 0 ? getImageNoAvailableURL : contract[index].imgList![0].imgUrl.toString(), fit: BoxFit.fill,) : Image.network(getImageNoAvailableURL, fit: BoxFit.fill)
                                   ),
                                   const SizedBox(height: 10,),
                                   _contractFiled('ID',contract[index].id.toString()),
@@ -159,7 +160,7 @@ class _ContractPageState extends State<ContractPage> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  AutoSizeText(contract[index].title.toString(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
+                                  Text((contract[index].title.toString().length >= 25) ? contract[index].title.toString().substring(0,22) + "..." : contract[index].title.toString(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),),
                                   const SizedBox(
                                     height: 10,
                                   ),
@@ -171,7 +172,7 @@ class _ContractPageState extends State<ContractPage> {
                                       _contractFiled('Ngày bắt đầu',formatDatenoTime(contract[index].startedDate.toString())),
                                       _contractFiled('Ngày kết thúc',formatDatenoTime(contract[index].endedDate.toString())),
                                       _contractFiled('Giá trị hợp đồng','${f.format(contract[index].total)} đ'),
-                                      _contractFiled('Trạng thái', formatStatus(contract[index].status.toString())),
+                                      _contractFiledColor('Trạng thái', formatStatus(contract[index].status.toString()), formatColorStatus(contract[index].status.toString())),
                                       _contractFiled('Địa chỉ',contract[index].address.toString().length >= 25 ? (contract[index].address.toString().substring(0,22) + "...") : contract[index].address.toString()),
                                     ],
                                   ),
@@ -243,6 +244,25 @@ class _ContractPageState extends State<ContractPage> {
               TextSpan(
                 text: des,
                 style: const TextStyle(fontSize: 12, color: Colors.black),),
+            ])),
+        const SizedBox(
+          height: 5,
+        ),
+      ],
+    );
+  }
+
+  Widget _contractFiledColor(String title, String des, color) {
+    return Column(
+      children: [
+        RichText(
+            text: TextSpan(children: [
+              TextSpan(
+                text: title + ': ',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black),),
+              TextSpan(
+                text: des,
+                style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w600),),
             ])),
         const SizedBox(
           height: 5,

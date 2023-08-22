@@ -33,7 +33,6 @@ ContractDetail _$ContractDetailFromJson(Map<String, dynamic> json) =>
       workingDateList: (json['workingDateList'] as List<dynamic>?)
           ?.map((e) => ImgList.fromJson(e as Map<String, dynamic>))
           .toList(),
-    //  totalPage: json['totalPage'],
     );
 
 Map<String, dynamic> _$ContractDetailToJson(ContractDetail instance) =>
@@ -49,7 +48,6 @@ Map<String, dynamic> _$ContractDetailToJson(ContractDetail instance) =>
       'showServiceModel': instance.showServiceModel,
       'showServicePackModel': instance.showServicePackModel,
       'workingDateList': instance.workingDateList,
-     // 'totalPage': instance.totalPage,
     };
 
 ShowContractModel _$ShowContractModelFromJson(Map<String, dynamic> json) =>
@@ -92,7 +90,6 @@ ShowContractModel _$ShowContractModelFromJson(Map<String, dynamic> json) =>
           ? null
           : ShowPaymentTypeModel.fromJson(
               json['showPaymentTypeModel'] as Map<String, dynamic>),
-      //totalPage: json['totalPage'],
     );
 
 Map<String, dynamic> _$ShowContractModelToJson(ShowContractModel instance) =>
@@ -121,7 +118,6 @@ Map<String, dynamic> _$ShowContractModelToJson(ShowContractModel instance) =>
       'showCustomerModel': instance.showCustomerModel,
       'showStoreModel': instance.showStoreModel,
       'showPaymentTypeModel': instance.showPaymentTypeModel,
-      //'totalPage': instance.totalPage,
     };
 
 ImgList _$ImgListFromJson(Map<String, dynamic> json) => ImgList(
@@ -144,7 +140,6 @@ ShowStaffModel _$ShowStaffModelFromJson(Map<String, dynamic> json) =>
       avatar: json['avatar'] as String?,
       gender: json['gender'] as bool?,
       status: json['status'] as String?,
-      //totalPage: json['totalPage'],
     );
 
 Map<String, dynamic> _$ShowStaffModelToJson(ShowStaffModel instance) =>
@@ -157,7 +152,6 @@ Map<String, dynamic> _$ShowStaffModelToJson(ShowStaffModel instance) =>
       'avatar': instance.avatar,
       'gender': instance.gender,
       'status': instance.status,
-     // 'totalPage': instance.totalPage,
     };
 
 ShowCustomerModel _$ShowCustomerModelFromJson(Map<String, dynamic> json) =>

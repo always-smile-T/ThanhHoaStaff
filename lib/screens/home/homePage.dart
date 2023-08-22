@@ -11,10 +11,7 @@ import '../../blocs/service/service_state.dart';
 import '../../constants/constants.dart';
 import '../../models/authentication/user.dart';
 import '../../providers/authentication/authantication_provider.dart';
-import '../../report/create_report.dart';
-import '../../report/reportPage.dart';
 import '../../screens/bonsai/searchScreen.dart';
-import '../../utils/connection/utilsConnection.dart';
 import '../authentication/loginPage.dart';
 import '../authentication/manaProfilePage.dart';
 import '../contract/contractPage.dart';
@@ -22,6 +19,7 @@ import '../notification/notificationPage.dart';
 import '../order/orderHistoryScreen.dart';
 import '../schedule/schedulePage.dart';
 import '../service/servicePage.dart';
+import '../webview.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -172,15 +170,6 @@ class _HomePageState extends State<HomePage> {
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black)),
-                  /*const SizedBox(height: 20,),
-                  GestureDetector(
-                    onTap: (){
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ServicePage(),
-                      ));
-                    },
-                    child: _dashboardButton('Khách Hàng Đánh Giá'),
-                  ),*/
                   const SizedBox(height: 20,),
                   GestureDetector(
                     onTap: (){
@@ -189,16 +178,7 @@ class _HomePageState extends State<HomePage> {
                           builder: (context) => const LoginPage()));
                     },
                     child: _dashboardButton('Đổi Tài Khoản'),
-                  ),/*
-                  const SizedBox(height: 20,),
-                  GestureDetector(
-                    onTap: (){
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const CreateReportPage(),
-                      ));
-                    },
-                    child: _dashboardButton('Test Cửa Hàng'),
-                  ),*/
+                  ),
                 ],
               ),
             ),

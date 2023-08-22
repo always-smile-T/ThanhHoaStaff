@@ -138,7 +138,7 @@ const NotiOrder2 =
 const NotiOrder3 =
     'Tiến hành giao hàng.';
 const NotiOrder4 =
-    'Xác nhận khách đã nhận.';
+    'Xác nhận khách đã nhận tại đây.';
 const NotiOrder5 =
     'Bạn đã hoàn thành đơn hàng xuất sắc.';
 const NotiOrder6 =

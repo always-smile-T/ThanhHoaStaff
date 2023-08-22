@@ -4,15 +4,20 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:overlay_loading_progress/overlay_loading_progress.dart';
 import 'package:provider/provider.dart';
 import '../../blocs/order/orderBloc.dart';
 import '../../blocs/order/orderEvent.dart';
 import '../../blocs/order/orderState.dart';
 import '../../components/appBar.dart';
 import '../../constants/constants.dart';
+import '../../main.dart';
 import '../../models/order/order.dart';
+import '../../providers/img_provider.dart';
 import '../../providers/order/order_provider.dart';
 import '../../screens/order/orderDetail.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -31,6 +36,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   OrderProvider orderProvider = OrderProvider();
   bool isLoading = true;
   String status = 'ALL';
+  int checkState = 0;
   final _scrollController = ScrollController();
 
   late OrderBloc orderBloc;
@@ -181,7 +187,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
         itemBuilder: (context, index) {
-          return enumStatus[index] == 'WAITING' ? const SizedBox() : GestureDetector(
+          return (enumStatus[index] == 'WAITING' || enumStatus[index] == 'CUSTOMERCANCELED'|| enumStatus[index] == 'DENIED') ? const SizedBox() : GestureDetector(
             onTap: () {
               setState(() {
                 selectedTab = index;
@@ -253,6 +259,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   Widget _orderTab(OrderObject order) {
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -279,7 +286,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     borderRadius: BorderRadius.circular(10),
                     image: DecorationImage(
                         fit: BoxFit.cover,
-                        image:
+                        image: order.progressStatus! == "RECEIVED" ? NetworkImage(order.receiptIMG ?? NoIMG) :
                         NetworkImage(order.showPlantModel!.image ?? NoIMG)),
                   )),
               Padding(
@@ -417,9 +424,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ),
         GestureDetector(
           onTap: () {
-            setState(() {
-              showdialogConfirm('PACKAGING', order, 'đống gói');
-            });
+            showdialogConfirm('PACKAGING', order, 'đống gói', null);
           },
           child: comfirmButton('đóng gói'),
         )
@@ -436,9 +441,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ),
         GestureDetector(
           onTap: () {
-            setState(() {
-              showdialogConfirm('DELIVERING', order, 'Giao hàng');
-            });
+            showdialogConfirm('DELIVERING', order, 'Giao hàng', null);
           },
           child: comfirmButton('Giao hàng'),
         )
@@ -453,12 +456,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ),
         GestureDetector(
           onTap: () {
-            setState(() {
-              setState(() {
-                showdialogConfirm('RECEIVED', order, 'Đã nhận');
-              });
-
-            });
+            _pickImage(ImageSource.gallery);
+            showdialogConfirm('RECEIVED', order, 'Đã nhận', imgURL.first);
           },
           child: comfirmButton('Đã nhận'),
         )
@@ -509,7 +508,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     );
   }
 
-  dynamic showdialogConfirm(String status, OrderObject order, confirmStatus) {
+  dynamic showdialogConfirm(String status, OrderObject order, confirmStatus, img /*, isReceived*/) {
     var size = MediaQuery.of(context).size;
     return showDialog(
         context: context,
@@ -546,9 +545,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      ChangeStatusOrder(order.id, status);
-                      Navigator.pop(context);
-                      setState(() {});
+                      ChangeStatusOrder(order.id, status, img);
+                      Navigator.of(context).pop();
+                      /*Navigator.of(context)
+                          .pushReplacement(MaterialPageRoute(
+                          builder: (context) => const OrderHistoryScreen()));*/
                     },
                     child: Container(
                       alignment: Alignment.center,
@@ -572,6 +573,90 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             ],
           );
         });
+  }
+
+  dynamic showdialogConfirmRecevied(String status, OrderObject order, confirmStatus, img /*, isReceived*/) {
+    var size = MediaQuery.of(context).size;
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(
+              child: Text(
+                'Tiến hành Xác nhận hình ảnh',
+                style: TextStyle(color: buttonColor, fontSize: 25),
+              ),
+            ),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Quay lại',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      _pickImage(ImageSource.gallery);
+                      showdialogConfirm('RECEIVED', order, 'Đã nhận', imgURL.first);
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Xác nhận',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                ],
+              )
+            ],
+          );
+        });
+  }
+
+  List<String> imgURL = [];
+  List<File> listFile = [];
+
+  Future _pickImage(ImageSource source) async {
+    final image = await ImagePicker().pickImage(source: source);
+    // final image = await ImagePicker().pickMedia();
+    if (image == null) return;
+    File? img = File(image.path);
+    OverlayLoadingProgress.start(context);
+    ImgProvider().upload(img).then((value) {
+      setState(() {
+        imgURL.add(value);
+        listFile.add(img);
+      });
+      OverlayLoadingProgress.stop();
+    });
+
+    // ImgProvider().upload(img);
   }
 
 }

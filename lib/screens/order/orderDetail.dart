@@ -172,8 +172,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Row(
               children: [
                 const Text('Trạng Thái thanh toán: '),
-                Text(order.paymentMethod == 'Online'
-                    ? 'Đã thanh toán'
+                Text(order.isPaid ? 'Đã thanh toán'
                     : 'Chưa thanh toán'),
               ],
             ),

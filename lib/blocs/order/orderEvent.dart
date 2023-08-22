@@ -33,6 +33,19 @@ abstract class OrderEvent {
   List<OrderDetail>? get listOrderDetial => _listOrderDetial;
 }
 
+
+abstract class AnOrderEvent {
+  String? _orderID;
+  String? get orderID => _orderID;
+
+
+  OrderObject? _order;
+  OrderObject? get listOrder => _order;
+
+  List<OrderDetail>? _listOrderDetial;
+  List<OrderDetail>? get listOrderDetial => _listOrderDetial;
+}
+
 class GetAllOrderEvent extends OrderEvent {
   String? status;
   int pageNo;
@@ -50,6 +63,17 @@ class GetAllOrderEvent extends OrderEvent {
         required this.listOrder})
       : super();
 }
+
+class GetAnOrderEvent extends AnOrderEvent {
+  String? id;
+  OrderObject order;
+
+  GetAnOrderEvent(
+      {this.id,
+        required this.order})
+      : super();
+}
+
 
 class GetAllOrderDetailEvent extends OrderEvent {
   bool isFeedback;

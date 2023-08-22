@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:thanhhoa_garden_staff_app/models/workingDate/scheduleToday/schedule_today.dart';
 import 'package:thanhhoa_garden_staff_app/models/workingDate/working_date.dart';
 import '../../models/contract/contractDetail/contract_detail.dart';
 import '../../utils/connection/utilsConnection.dart';
@@ -25,7 +24,6 @@ Future<List<WorkingDate>> fetchSchedule() async {
     List<WorkingDate> schedule = jsonData
         .map((json) => WorkingDate.fromJson(json as Map<String, dynamic>))
         .toList();
-    print(responseJson);
     return schedule;
   } else {
     throw Exception('Failed to fetch contract details');
@@ -41,7 +39,6 @@ Future<List<ContractDetail>> fetchScheduleInWeek(from, to) async {
     headers: header,
   );
   final decoded = utf8.decode(response.bodyBytes);
-  print(decoded);
   if (response.statusCode == 200) {
     List<ContractDetail> contractDetails = ((jsonDecode(decoded)) as List)
         .map((json) => ContractDetail.fromJson(json as Map<String, dynamic>))

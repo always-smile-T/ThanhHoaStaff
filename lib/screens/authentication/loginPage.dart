@@ -16,7 +16,8 @@ import '../../models/authentication/user.dart';
 import '../home/homePage.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.notiToken});
+  final notiToken;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -128,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
                         )),*/
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

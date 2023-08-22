@@ -1,8 +1,13 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import '../../models/authentication/user.dart';
+import '../../models/cart/cart.dart';
 import '../../models/contract/contract.dart';
 import '../../models/contract/contractDetail/contract_detail.dart';
+import '../../models/order/distance.dart';
+import '../../models/order/order.dart';
+import '../../models/store/store.dart';
 import '../../utils/connection/utilsConnection.dart';
 import '../../utils/helper/shared_prefs.dart';
 
@@ -77,3 +82,51 @@ Future<List<ContractDetail>> fetchContractDetailByID(id, pageNo, pageSize) async
 }
 
 
+Future<Contract> fetchAContract( contractId) async {
+  var header = getheader(getTokenAuthenFromSharedPrefs());
+  String url = 'https://thanhhoagarden.herokuapp.com/contract/getByID?contractID=$contractId';
+  final response = await http.get(
+    Uri.parse(url),
+    headers: header,
+  );
+  final responseJson = jsonDecode(response.body);
+  if (response.statusCode == 200) {
+    Contract contract = Contract.fromJson(responseJson);
+    return contract;
+  } else {
+    throw Exception('Failed to fetch contract details');
+  }
+}
+
+Future<OrderObject> fetchAOrder( OrderrId) async {
+  var header = getheader(getTokenAuthenFromSharedPrefs());
+  String url = 'https://thanhhoagarden.herokuapp.com/order/getByID?orderID=$OrderrId';
+  final response = await http.get(
+    Uri.parse(url),
+    headers: header,
+  );
+  final responseJson = jsonDecode(response.body);
+  if (response.statusCode == 200) {
+    OrderCart plant = OrderCart();
+    User showStaffModel = User();
+    User showCustomerModel = User();
+    Distance showDistancePriceModel = Distance();
+    Store showStoreModel = Store();
+    plant = OrderCart.fromJson(responseJson['showPlantModel']);
+    showStaffModel = User.fetchInfo(responseJson['showStaffModel']);
+    showCustomerModel = User.fetchInfo(responseJson['showCustomerModel']);
+    showDistancePriceModel =
+        Distance.fromJson(responseJson['showDistancePriceModel']);
+    showStoreModel = Store.fromJson(responseJson['showStoreModel']);
+    OrderObject contract = OrderObject.fromJson(
+        responseJson['showOrderModel'],
+        showStaffModel,
+        showCustomerModel,
+        showDistancePriceModel,
+        showStoreModel,
+        plant);
+    return contract;
+  } else {
+    throw Exception('Failed to fetch contract details');
+  }
+}

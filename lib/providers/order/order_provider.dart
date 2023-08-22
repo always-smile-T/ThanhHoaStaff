@@ -86,6 +86,49 @@ class OrderProvider extends ChangeNotifier {
     return result;
   }
 
+
+  Future<bool> getOrder(AnOrderEvent event) async {
+    bool result = false;
+    Map<String, dynamic> param = ({});
+    String queryString = Uri(queryParameters: param).query;
+    var header = getheader(getTokenAuthenFromSharedPrefs());
+    try {
+      final res = await http.get(Uri.parse(mainURL + getOrderURL + queryString),
+          headers: header);
+      if (res.statusCode == 200) {
+        if (res.body.isNotEmpty) {
+          var jsondata = json.decode(res.body);
+          for (var data in jsondata) {
+            User staff = User();
+            User customer = User();
+            Distance distance = Distance();
+            Store store = Store();
+            OrderCart plant = OrderCart();
+            staff = User.fetchInfo(data['showStaffModel']);
+            customer = User.fetchInfo(data['showCustomerModel']);
+            distance = Distance.fromJson(data['showDistancePriceModel']);
+            store = Store.fromJson(data['showStoreModel']);
+            plant = OrderCart.fromJson(data['showPlantModel'][0]);
+
+            _order = OrderObject.fromJson(
+                data, staff, customer, distance, store, plant);
+          }
+        }
+        result = true;
+        notifyListeners();
+      } else {
+        result = false;
+        notifyListeners();
+      }
+    } on HttpException catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+      }
+    }
+
+    return result;
+  }
+
   Future<bool> getDistancePrice() async {
     bool result = false;
     var header = getheader(getTokenAuthenFromSharedPrefs());
@@ -297,9 +340,9 @@ class OrderProvider extends ChangeNotifier {
 }
 
 
-Future<void> ChangeStatusOrder(orderID, status) async {
+Future<void> ChangeStatusOrder(orderID, status, img) async {
   var header = getheader(getTokenAuthenFromSharedPrefs());
-  String url = '$mainURL/order/changeOrderStatus?orderID=$orderID&status=$status';
+  String url = '$mainURL/order/changeOrderStatus?orderID=$orderID&status=$status&receiptIMG=$img';
   final response = await http.put(
     Uri.parse(url),
     headers: header,

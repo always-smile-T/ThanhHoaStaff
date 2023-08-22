@@ -95,10 +95,21 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                   _contractFiled('Tên hợp đồng',contract.title.toString()),
                   _contractFiled('Ngày Bắt Đầu',formatDatenoTime(contract.startedDate.toString())),
                   _contractFiled('Ngày kết thúc',formatDatenoTime(contract.endedDate.toString())),
-                  _contractFiled('Tình trạng', contract.status.toString()),
                   _contractFiled('Giá trị hợp đồng', '${f.format(contract.total)} đ'),
-                  _contractFiled('Đã cọc', '${f.format(contract.deposit)} đ'), ////
-                  _contractFiled('Trạng thái', formatStatus(contract.status.toString())),
+                  _contractFiled('Đã cọc', '${f.format(contract.deposit)} đ'),
+                  Row(
+                    children: [
+                      const Text('Trạng thái: ', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black),),
+                      Container(
+                        width: 150,
+                        height: 25,
+                        decoration: BoxDecoration(
+                          color: divince,
+                          border: Border.all(width: 1)
+                        ),
+                          child: Center(child: Text(formatStatus(contract.status.toString()), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: formatColorStatus(contract.status.toString())),))),
+                    ],
+                  )
                 ],
               ),
             ),
@@ -208,7 +219,7 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(cDetail.length > 1 ? "Thông tin dịch vụ ${index + 1}" : "Thông tin dịch vụ", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),),
+                                    Text(cDetail.length > 1 ? "Thông tin dịch vụ ${index + 1}" : "Thông tin dịch vụ", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: buttonColor),),
                                     const SizedBox(height: 5,),
                                     _contractFiled('ID dịch vụ', cDetail[index].showServiceModel!.id.toString()),
                                     _contractFiled('ID hoá đơn dịch vụ',cDetail[index].id.toString()),
@@ -231,13 +242,13 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               _contractFiled(cDetail[index].showServiceModel!.id == 'SE003' ? 'Diện tích vườn' : 'Chiều cao cây', cDetail[index].showServiceTypeModel!.typeName.toString()),
-                                              _contractFiled('Mô tả', cDetail[index].showServiceModel!.description.toString()),
+                                              _contractFiledColor('Mô tả', cDetail[index].showServiceModel!.description.toString(), HintIcon),
                                               _contractFiled('Lịch chăm sóc',cDetail[index].timeWorking.toString()),
                                               _contractFiled('Ngày bắt đầu',formatDatenoTime(cDetail[index].startDate.toString())),
                                               _contractFiled('Ngày kết thúc',formatDatenoTime(cDetail[index].endDate.toString())),
-                                              _contractFiled('Thời hạn dịch vụ', cDetail[index].showServicePackModel!.packRange.toString()),
-                                              _contractFiled('Chiết khấu(%)', cDetail[index].showServicePackModel!.packPercentage.toString()),
-                                              _contractFiled('Giá',f.format(cDetail[index].showServiceModel!.price)),
+                                              _contractFiled('Thời hạn dịch vụ', cDetail[index].showServicePackModel!.packRange.toString() + ' ' + cDetail[index].showServicePackModel!.packUnit.toString() ),
+                                              _contractFiledColor('Chiết khấu', cDetail[index].showServicePackModel!.packPercentage.toString() + ' (%)' , highLightText),
+                                              _contractFiledColor('Giá',f.format(cDetail[index].showServiceModel!.price), priceColor),
                                             ],
                                           ),
                                         ),
@@ -276,6 +287,25 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
               TextSpan(
                   text: des,
                   style: const TextStyle(fontSize: 14, color: Colors.black),),
+            ])),
+        const SizedBox(
+          height: 5,
+        ),
+      ],
+    );
+  }
+
+  Widget _contractFiledColor(String title, String des, color) {
+    return Column(
+      children: [
+        RichText(
+            text: TextSpan(children: [
+              TextSpan(
+                text: title + ': ',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black),),
+              TextSpan(
+                text: des,
+                style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w600),),
             ])),
         const SizedBox(
           height: 5,
