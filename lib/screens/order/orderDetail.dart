@@ -6,14 +6,17 @@ import '../../components/note.dart';
 import '../../constants/constants.dart';
 import '../../models/cart/cart.dart';
 import '../../models/order/order.dart';
+import '../../models/order_detail/order_detail.dart';
+import '../../providers/contract/contract_provider.dart';
 import '../../providers/order/order_provider.dart';
-import '../../screens/feedback/feedbackScreen.dart';
 import '../../screens/order/deliveryScreen.dart';
-import '../../screens/order/orderHistoryScreen.dart';
+import '../../utils/format/order.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  OrderObject order;
-  OrderDetailScreen({super.key, required this.order});
+  OrderObject? order;
+  String? orderID;
+  int? whereCall;
+  OrderDetailScreen({super.key, this.order, this.orderID, this.whereCall});
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -22,38 +25,51 @@ class OrderDetailScreen extends StatefulWidget {
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   var f = NumberFormat("###,###,###", "en_US");
   bool isloading = true;
-  List<OrderDetail> litsDetail = [];
+  List<OrderDetail>? litsDetail = [];
 
   OrderProvider orderProvider = OrderProvider();
 
   double totalplantPrice = 0;
   double totalplantShip = 0;
   double totalShipPrice = 0;
+  List <OrderDetailbyID>? orderbyID;
   @override
   void initState() {
     // TODO: implement initState
-
-    getOrderDetail();
+    if(widget.whereCall == 1){
+      getOrderDetail();
+    }else if(widget.whereCall == 2){
+      getOrderDetailbyID();
+    }
     super.initState();
+  }
+  getOrderDetailbyID() async {
+    orderbyID = await fetchAOrder(widget.orderID!);
+    setState(() {
+      totalplantShip = orderbyID![0].showOrderModel!.totalShipCost!;
+      totalShipPrice = orderbyID![0].showOrderModel!.distance! * orderbyID![0].showPlantModel!.shipPrice!;
+      totalplantPrice = orderbyID![0].showOrderModel!.total! - totalplantShip - totalShipPrice;
+      isloading = false;
+    });
   }
 
   getOrderDetail() {
-    orderProvider.getOrderDetail(widget.order.id).then((value) {
+    orderProvider.getOrderDetail(widget.order!.id).then((value) {
       setState(() {
         litsDetail = orderProvider.detalList!;
         isloading = false;
-        totalplantPrice = litsDetail.fold(
+        totalplantPrice = litsDetail!.fold(
             0.0,
                 (sum, item) =>
             sum + item.showPlantModel!.plantPrice! * item.quantity!);
-        totalplantShip = litsDetail.fold(
+        totalplantShip = litsDetail!.fold(
             0.0,
                 (sum, item) =>
             sum +
                 item.showPlantModel!.shipPrice! *
                     item.showPlantModel!.quantity!);
-        totalShipPrice = (widget.order.distance) *
-            widget.order.showDistancePriceModel!.pricePerKm;
+        totalShipPrice = (widget.order!.distance) *
+            widget.order!.showDistancePriceModel!.pricePerKm;
       });
     });
   }
@@ -66,7 +82,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var order = widget.order;
     return Scaffold(
       backgroundColor: background,
       body: Stack(
@@ -84,7 +99,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   const SizedBox(
                     height: 10,
                   ),
-                  _ordertab(order),
+                  widget.whereCall == 1 ? _ordertab(widget.order!, null, 1) : _ordertab(null ,orderbyID![0], 2),
                   Container(
                     height: 10,
                     decoration: const BoxDecoration(color: divince),
@@ -125,7 +140,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   const SizedBox(
                     height: 10,
                   ),
-                  NoteOrder(Phone: order.showStoreModel!.phone),
+                  NoteOrder(Phone: widget.whereCall == 1 ? widget.order!.showStoreModel!.phone : orderbyID![0].showCustomerModel!.phone),
                   Container(
                     height: 10,
                     decoration: const BoxDecoration(color: divince),
@@ -144,7 +159,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  Widget _ordertab(OrderObject order) {
+  Widget _ordertab(OrderObject? order, OrderDetailbyID? orderByID, whereCall) {
     return Container(
       padding: const EdgeInsets.all(10),
       child: Row(children: [
@@ -154,7 +169,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Row(
               children: [
                 const Text('Trạng Thái :'),
-                Text(convertStatus(order.progressStatus)),
+                whereCall == 1 ? Text(convertStatus(order!.progressStatus)) : Text(convertStatus(orderByID!.showOrderModel!.progressStatus!)),
               ],
             ),
             const SizedBox(
@@ -163,7 +178,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Row(
               children: [
                 const Text('Thời gian: '),
-                Text(converDate(order)),
+                whereCall == 1 ? Text(converDate(order!)) : Text(converDateByID(orderByID!)) ,
               ],
             ),
             const SizedBox(
@@ -172,7 +187,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Row(
               children: [
                 const Text('Trạng Thái thanh toán: '),
-                Text(order.isPaid ? 'Đã thanh toán'
+                whereCall == 1 ?  Text(order!.isPaid ? 'Đã thanh toán'
+                    : 'Chưa thanh toán') : Text(orderByID!.showOrderModel!.isPaid! ? 'Đã thanh toán'
                     : 'Chưa thanh toán'),
               ],
             ),
@@ -182,7 +198,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Row(
               children: [
                 const Text('Mã đơn hàng: '),
-                Text(order.id.toString().substring(1)),
+                whereCall == 1 ? Text(order!.id.toString().substring(1)) : Text(orderByID!.showOrderModel!.id.toString().substring(1)),
               ],
             ),
           ]),
@@ -195,7 +211,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => DeliveryScreen(order: order),
+                    builder: (context) => DeliveryScreen(order: order, orderbyID: orderbyID, whereCall : whereCall),
                   ));
             },
             child: Column(
@@ -216,19 +232,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  Widget _listPlant(List<OrderDetail> litsDetail) {
+  Widget _listPlant(litsDetail, whereCall) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.only(left: 10, right: 10),
-      itemCount: litsDetail.length,
+      itemCount: whereCall == 1 ? litsDetail.length : orderbyID!.length,
       itemBuilder: (context, index) {
-        return _plantTab(litsDetail[index].showPlantModel!);
+        return whereCall == 1 ? _plantTab(litsDetail[index].showPlantModel!, 1, index) : _plantTab(null , 2, index);
       },
     );
   }
 
-  Widget _plantTab(OrderCart cart) {
+  Widget _plantTab(OrderCart? cart, whereCall, i) {
     var size = MediaQuery.of(context).size;
     return Column(
       children: [
@@ -250,13 +266,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       borderRadius: BorderRadius.circular(10),
                       image: DecorationImage(
                           fit: BoxFit.cover,
-                          image: NetworkImage(cart.image ??
+                          image: NetworkImage( whereCall == 1 ? cart!.image : orderbyID![i].showPlantModel!.image ??
                               'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyRE2zZSPgbJThiOrx55_b4yG-J1eyADnhKw&usqp=CAU')),
                     )),
                 const SizedBox(
                   width: 10,
                 ),
-                Text(cart.plantName,
+                Text(whereCall == 1 ? cart!.plantName : orderbyID![i].showPlantModel!.plantName,
                     style: const TextStyle(
                         color: darkText,
                         fontSize: 18,
@@ -268,8 +284,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('x${cart.quantity}'),
-                      Text('${f.format(cart.quantity! * cart.plantPrice!)} đ')
+                      Text(whereCall == 1 ? 'x${cart!.quantity}' : 'x${orderbyID![i].showPlantModel!.quantity}'),
+                      Text(whereCall == 1 ? '${f.format(cart!.quantity! * cart!.plantPrice!)} đ' : '${f.format(orderbyID![i].showPlantModel!.quantity! * orderbyID![i].showPlantModel!.plantPrice!)} đ')
                     ],
                   ),
                 )
@@ -287,13 +303,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget _infortab() {
     return Column(
       children: [
-        Container(child: _listPlant(litsDetail)),
+        Container(child: widget.whereCall == 2 ? _listPlant(litsDetail , 2) : _listPlant(litsDetail, 1)),
         Container(
           padding: const EdgeInsets.only(left: 10, right: 10),
           height: 50,
           child: Row(children: [
-            Text(
-                '${litsDetail.fold(0, (sum, item) => sum + item.showPlantModel!.quantity!)} sản phẩm'),
+            Text( widget.whereCall == 2 ? '${orderbyID!.length} sản phẩm':
+                '${litsDetail!.fold(0, (sum, item) => sum + item.showPlantModel!.quantity!)} sản phẩm'),
             const Spacer(),
             Text('${f.format(totalplantPrice)} đ'),
           ]),
@@ -324,7 +340,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                   Text('${f.format(totalShipPrice)} đ',
                       style: const TextStyle()),
-                  Text(' ( ${(widget.order.distance)} Km )',
+                  Text( widget.whereCall == 2 ? ' ( ${(orderbyID![0].showOrderModel!.distance)} Km )' : ' ( ${(widget.order!.distance)} Km )',
                       style: const TextStyle(color: Colors.red)),
                 ],
               )
@@ -364,6 +380,66 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               child: const Text(
+                'Tên người nhận : ',
+                style: TextStyle(color: darkText, fontSize: 18),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(10),
+              child: Text(
+                widget.whereCall == 1 ? widget.order!.fullName : orderbyID![0].showOrderModel!.fullName,
+                style: TextStyle(color: darkText, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            const SizedBox(
+              width: 10,
+            ),
+            Container(
+              height: 7,
+              width: 7,
+              decoration: BoxDecoration(
+                  color: buttonColor, borderRadius: BorderRadius.circular(50)),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Container(
+              padding: const EdgeInsets.all(10),
+              child: const Text(
+                'Số điện thoại : ',
+                style: TextStyle(color: darkText, fontSize: 18),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(10),
+              child: Text(
+                widget.whereCall == 1 ? widget.order!.phone : orderbyID![0].showOrderModel!.phone,
+                style: TextStyle(color: darkText, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            const SizedBox(
+              width: 10,
+            ),
+            Container(
+              height: 7,
+              width: 7,
+              decoration: BoxDecoration(
+                  color: buttonColor, borderRadius: BorderRadius.circular(50)),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Container(
+              padding: const EdgeInsets.all(10),
+              child: const Text(
                 'Địa chỉ người nhận : ',
                 style: TextStyle(color: darkText, fontSize: 18),
               ),
@@ -373,7 +449,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         Container(
           padding: const EdgeInsets.all(10),
           child: Text(
-            widget.order.address,
+            widget.whereCall == 2 ? orderbyID![0].showOrderModel!.address: widget.order!.address,
             style: const TextStyle(color: darkText, fontSize: 16),
           ),
         ),
@@ -404,7 +480,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           width: MediaQuery.of(context).size.width,
           padding: const EdgeInsets.all(10),
           child: AutoSizeText(
-            widget.order.showStoreModel!.address,
+            widget.whereCall == 2 ? orderbyID![0].showStoreModel!.address : widget.order!.showStoreModel!.address,
             style: const TextStyle(color: darkText, fontSize: 16),
           ),
         ),

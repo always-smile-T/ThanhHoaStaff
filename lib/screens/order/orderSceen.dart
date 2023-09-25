@@ -8,11 +8,9 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder2/geocoder2.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:thanhhoa_garden_staff_app/components/circular.dart';
-import 'package:thanhhoa_garden_staff_app/utils/connection/utilsConnection.dart';
+import 'package:vnpay_flutter/vnpay_flutter.dart';
 import '../../blocs/cart/cart_bloc.dart';
 import '../../blocs/cart/cart_event.dart';
 import '../../components/appBar.dart';
@@ -21,22 +19,23 @@ import '../../models/cart/cart.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import '../../models/cus/cus.dart';
 import '../../models/order/distance.dart';
 import '../../models/order/order.dart';
 import '../../models/store/store.dart';
 import '../../providers/authentication/authantication_provider.dart';
+import '../../providers/authentication/user_provider.dart';
 import '../../providers/order/order_provider.dart';
 import '../../providers/store/my_store.dart';
-import '../../providers/store/store_provider.dart';
-import '../../screens/home/homePage.dart';
-import '../../screens/order/mapScreen.dart';
 import '../../models/authentication/user.dart' as UserObj;
-import '../../screens/order/orderHistoryScreen.dart';
 import 'package:overlay_loading_progress/overlay_loading_progress.dart';
+import '../../screens/order/mapScreen.dart';
+import '../home/historyScreen.dart';
 
 class OrderScreen extends StatefulWidget {
   List<OrderCart> listPlant;
-  OrderScreen({super.key, required this.listPlant});
+  OrderScreen({super.key, required this.listPlant, required this.isDelivery});
+  final isDelivery;
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -58,15 +57,22 @@ class _OrderScreenState extends State<OrderScreen> {
   var oneDecimal = const Duration(milliseconds: 100);
 
   AuthenticationProvider _authenticationProvider = AuthenticationProvider();
-  StoreProvider _storeProvider = StoreProvider();
   OrderProvider _orderProvider = OrderProvider();
   List<Store> listStore = [];
   UserObj.User? user;
+  late List <UserObj.User?> cus;
   Distance distancePrice = Distance();
   bool isFT = true;
   Map<String, dynamic> listDistance = {};
   Map<String, dynamic> storeDistance = {};
   Map<String, dynamic> distance = {};
+  String storeName = '';
+  String storeAddress = '';
+  String? cusID = null;
+  bool isAddress = true;
+  bool isPhone = true;
+  bool isName = true;
+  bool isEmail = true;
 
   LatLng origin = LatLng(0, 0);
 
@@ -113,6 +119,48 @@ class _OrderScreenState extends State<OrderScreen> {
     });
   }
 
+  getCusInfor(phone) async {
+    List<Cus> cus;
+    cus = (await fetchCusInfor(phone))!;
+    print(cus.toString());
+    if(cus.isEmpty){
+      setState(() {
+        isLoading = true;
+        _visibility = false;
+        cusID = null;
+        _nameController.text = '';
+        _emailController.text = '';
+        _phoneController.text = '';
+        _addressController.text = '';
+        isName = true;
+        isAddress = true;
+        isEmail = true;
+        isPhone = true;
+      });
+      Fluttertoast.showToast(
+          msg: "Không tìm thấy số điện thoại",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: buttonColor,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    } else {
+    setState(() {
+      isLoading = true;
+      _visibility = false;
+      cusID = cus[0].userID.toString();
+      _nameController.text = cus[0].fullName!;
+      _emailController.text = cus[0].email!;
+      _phoneController.text = cus[0].phone!;
+      _addressController.text = cus[0].address!;
+      isName = true;
+      isAddress = true;
+      isEmail = true;
+      isPhone = true;
+      });}
+  }
+
   Future<LatLng> getCoordinatesFromAddress(String address) async {
     LatLng latLng = LatLng(0.0, 0.0);
     GeoData data = await Geocoder2.getDataFromAddress(
@@ -122,52 +170,53 @@ class _OrderScreenState extends State<OrderScreen> {
     return latLng;
   }
 
- /* setAdress(String address, LatLng orgin) {
+  setAdress(String address, LatLng orgin) {
     setState(() {
       origin = orgin;
       _addressController.text = address;
       isLoading = true;
-      isStore ? getDistanceThisStore().then((value) {
-        distance = value;
-        setState(() {
-          isLoading = false;
-        });
-      }) :
-      getDistanceNearBy().then((value) {
+      getDistanceThisStore().then((value) {
         distance = value;
         setState(() {
           isLoading = false;
         });
       });
     });
-  }*/
+  }
 
   getListStore() async {
-    isLoading = true;
-    await _storeProvider.getStore().then((value) {
+    isLoading = widget.isDelivery ? true : false;
+    getUserInfor();
+    setState(() {
+
+    });
+    /*await _storeProvider.getStore().then((value) {
       if (value) {
         setState(() {
-          /*listStore = _storeProvider.list!;
-          listStore = _storeProvider.list!;*/
+          *//*listStore = _storeProvider.list!;
+          listStore = _storeProvider.list!;*//*
         });
       }
       getUserInfor();
-    });
+    });*/
   }
 
-////1214
+
   Future<Map<String, double>> getDistanceThisStore() async {
+    print("first time");
     Map<String, double> Distance = {};
     var fetchStoreID = await FetchMyStoreID();
     String myStoreID = FormatStoreID(fetchStoreID.toString());
     var myStore = await FetchInfoMyStore(myStoreID);
     await getCoordinatesFromAddress(myStore.address).then((value) async {
       await getDistance(origin, value).then((value) {
-        storeDistance[myStore.address] = value;
+        storeDistance[myStore.address] = value + .0;
       });
     });
-    double thevalue = storeDistance.values.first ?? 0;
+    double thevalue = storeDistance.values.first;
     String thekey = myStoreID;
+    storeName = myStore.storeName;
+    storeAddress = myStore.address;
     storeDistance.forEach((k, v) {
       if (v < thevalue) {
         thevalue = v;
@@ -180,23 +229,27 @@ class _OrderScreenState extends State<OrderScreen> {
 
 
   Future<double> getDistance(LatLng origin, LatLng destination) async {
-    double distance = 0.0;
+    late var distance;
     try {
       final res = await http.get(Uri.parse(
           'https://api.mapbox.com/directions/v5/mapbox/driving/${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}?alternatives=false&annotations=state_of_charge%2Cduration&geometries=geojson&language=vi&overview=simplified&steps=true&access_token=sk.eyJ1IjoicGV4aW5ocHJvMjYiLCJhIjoiY2xpOXhpNHRwNGFxNzNrbnRrM2ZscjRnbSJ9.F9fRoMST9bhfFDgoZWZ5dQ'));
+      print("res.statusCode: " + res.statusCode.toString());
       if (res.statusCode == 200) {
         var jsondata = json.decode(res.body);
 
-        distance = jsondata['routes'][0]['distance'] ?? 0;
+        distance = jsondata['routes'][0]['distance'] ?? 0.0;
       }
-    } on HttpException catch (e) {}
-    return distance;
+    } on HttpException catch (e) {
+      print(e.message);
+    }
+    return distance + .0;
   }
+
 
 
   @override
   void dispose() {
-    cartBloc.dispose();
+    //cartBloc.dispose();
     super.dispose();
   }
 
@@ -287,285 +340,341 @@ class _OrderScreenState extends State<OrderScreen> {
           const Text('Tổng cộng : ',
               style: TextStyle(
                   color: darkText, fontSize: 16, fontWeight: FontWeight.w500)),
-          (isLoading)
+          (isLoading && widget.isDelivery)
               ? const Text('0đ',
               style: TextStyle(
                   color: priceColor,
                   fontSize: 16,
                   fontWeight: FontWeight.w500))
-              : Text(
+              : ((isLoading == false) && widget.isDelivery) ? Text(
               '${f.format((widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!)) + (widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!)) + ((distance.values.first) * distancePrice.pricePerKm ?? 0))} đ',
+              style: const TextStyle(
+                  color: priceColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500)) : Text(
+              '${f.format((widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!)))} đ',
               style: const TextStyle(
                   color: priceColor,
                   fontSize: 16,
                   fontWeight: FontWeight.w500)),
           const Spacer(),
-          (isLoading)
+          (isLoading && widget.isDelivery)
               ? Container()
               : GestureDetector( ////1214
             onTap: () {
-              List<Map<String, dynamic>> plant = [];
-              String method = COD ? 'Cash' : 'Card';
-              double dis = distance.values.first;
-              OrderObject order = OrderObject(
-                  fullName: _nameController.text,
-                  email: _emailController.text,
-                  phone: _phoneController.text,
-                  address: _addressController.text,
-                  paymentMethod: method,
-                  distance: dis);
-
-              for (var data in widget.listPlant) {
-                plant.add(data.toJson());
+              if(countSpaces(_addressController.text) >= 30 || _addressController.text.length >= 150){
+                setState(() {
+                  isAddress = false;
+                });
+              } else {
+                setState(() {
+                  isAddress = true;
+                });
               }
-              var data = order.createOrder(plant, distance.keys.first,
-                  distancePrice.distancePriceID, user!.userID, '');
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Center(
-                      child: Text(
-                        'Xác Nhận Đơn Hàng',
-                        style:
-                        TextStyle(color: buttonColor, fontSize: 25),
+              if(_phoneController.text.length >= 11 || checkStartsWithZero(_phoneController.text) == false){
+                setState(() {
+                  isPhone = false;
+                });
+              }else {
+                setState(() {
+                  isPhone = true;
+                });
+              }
+              if(validateEmail(_emailController.text) == false || _emailController.text.length >= 50){
+                setState(() {
+                  isEmail = false;
+                });
+              }else {
+                setState(() {
+                  isEmail = true;
+                });
+              }
+              if(_nameController.text.length >= 50){
+                setState(() {
+                  isName = false;
+                });
+              } else{
+                setState(() {
+                  isName = true;
+                });
+              }
+              if((isPhone == true) &&( isEmail == true) && (isAddress == true) && (isName == true)){
+                (_nameController.text == '') ? (_nameController.text = 'Khách hàng') : _nameController.text;
+                (_emailController.text == '') ? (_emailController.text = '(không)') : _emailController.text;
+                (_phoneController.text == '') ? (_phoneController.text = '(không)') : _phoneController.text;
+                (_addressController.text == '') ? (_addressController.text = '(khách hàng tự đem cây về)') : _addressController.text;
+                List<Map<String, dynamic>> plant = [];
+                String method = COD ? 'Thanh toán tiền mặt' : 'Thanh toán trực tuyến';
+                double dis = widget.isDelivery ? distance.values.first : 0.0;
+                OrderObject order = OrderObject(
+                    fullName: _nameController.text,
+                    email: _emailController.text,
+                    phone: _phoneController.text,
+                    address: _addressController.text,
+                    paymentMethod: method,
+                    distance: dis);
+
+                for (var data in widget.listPlant) {
+                  plant.add(data.toJson());
+                } ////Create Order API
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Center(
+                        child: Text(
+                          'Xác Nhận Đơn Hàng',
+                          style:
+                          TextStyle(color: buttonColor, fontSize: 25),
+                        ),
                       ),
-                    ),
-                    content: SizedBox(
-                      height: 395,
-                      width: size.width - 10,
-                      child: SingleChildScrollView(
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _rowInfor('Tên', order.fullName),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              _rowInfor('Email', order.email),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              _rowInfor('Số điện thoại', order.phone),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Row(
-                                children: [
-                                  Container(
-                                    height: 7,
-                                    width: 7,
-                                    decoration: BoxDecoration(
-                                        color: buttonColor,
-                                        borderRadius:
-                                        BorderRadius.circular(50)),
-                                  ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  const Text(
-                                    'Địa chỉ: ',
-                                    style: TextStyle(
-                                        color: buttonColor,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              SizedBox(
-                                width: size.width - 10,
-                                child: AutoSizeText(
-                                  '\t\t' + order.address,
-                                  maxLines: 2,
-                                  style: const TextStyle(
-                                    fontSize: 18,
+                      content: SizedBox(
+                        height: 395,
+                        width: size.width - 10,
+                        child: SingleChildScrollView(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _rowInfor('Tên', order.fullName),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                _rowInfor('Email', order.email),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                _rowInfor('Số điện thoại', order.phone),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      height: 7,
+                                      width: 7,
+                                      decoration: BoxDecoration(
+                                          color: buttonColor,
+                                          borderRadius:
+                                          BorderRadius.circular(50)),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    const Text(
+                                      'Địa chỉ: ',
+                                      style: TextStyle(
+                                          color: buttonColor,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                SizedBox(
+                                  width: size.width - 10,
+                                  child: AutoSizeText(
+                                    '\t\t' + order.address,
+                                    maxLines: 2,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              const Text(
-                                'Thông tin đơn hàng : ',
-                                style: TextStyle(
-                                    color: buttonColor,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Row(children: [
-                                Text(
-                                    '${widget.listPlant.fold(0, (sum, item) => sum + item.quantity!)} sản phẩm'),
-                                const Spacer(),
-                                const Text('Giá: '),
-                                Text(
-                                  '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!))} đ',
-                                  style: const TextStyle(color: priceColor),
+                                const SizedBox(
+                                  height: 10,
                                 ),
-                              ]),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Row(
-                                children: const [Text('Phí giao hàng: ')],
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                                children: [
-                                  Column(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.start,
+                                const Text(
+                                  'Thông tin đơn hàng : ',
+                                  style: TextStyle(
+                                      color: buttonColor,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Row(children: [
+                                  Text(
+                                      '${widget.listPlant.fold(0, (sum, item) => sum + item.quantity!)} sản phẩm'),
+                                  const Spacer(),
+                                  const Text('Giá: '),
+                                  Text(
+                                    '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!))} đ',
+                                    style: const TextStyle(color: priceColor),
+                                  ),
+                                ]),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Row(
+                                  children: [widget.isDelivery ? const Text('Phí giao hàng: ') : const Text('Khách hàng tự vận chuyển')],
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                widget.isDelivery ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: [
+                                    Column(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        children: const [
+                                          Text('Phí vận chuyển cây : ',
+                                              style: TextStyle(
+                                                  color: darkText,
+                                                  fontSize: 16)),
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          Text('Phí giao hàng: ',
+                                              style: TextStyle(
+                                                  color: darkText,
+                                                  fontSize: 16)),
+                                        ]),
+                                    Column(
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: const [
-                                        Text('Phí vận chuyển cây : ',
-                                            style: TextStyle(
-                                                color: darkText,
-                                                fontSize: 16)),
-                                        SizedBox(
+                                      CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                            '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!))} đ',
+                                            style: const TextStyle(
+                                                color: priceColor)),
+                                        const SizedBox(
                                           height: 10,
                                         ),
-                                        Text('Phí giao hàng: ',
-                                            style: TextStyle(
-                                                color: darkText,
-                                                fontSize: 16)),
-                                      ]),
-                                  Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                          '${f.format(widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!))} đ',
-                                          style: const TextStyle(
-                                              color: priceColor)),
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                      Text(
-                                          '${f.format(distance.values.first * distancePrice.pricePerKm ?? 0)} đ',
-                                          style: const TextStyle(
-                                              color: priceColor)),
-                                      Text(
-                                          ' ( ${(distance.values.first)} Km )',
-                                          style: const TextStyle(
-                                              color: Colors.red,
-                                              fontSize: 15)),
-                                    ],
-                                  )
-                                ],
-                              ),
-                              Center(
-                                child: Column(children: [
-                                  const Text('Tổng cộng : ',
-                                      style: TextStyle(
-                                          color: darkText,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500)),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  Text(
-                                      '${f.format((widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!)) + (widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!)) + ((distance.values.first) * distancePrice.pricePerKm ?? 0))} đ',
-                                      style: const TextStyle(
-                                          color: priceColor,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500)),
-                                ]),
-                              )
-                            ]),
+                                        Text(
+                                            '${f.format(distance.values.first * distancePrice.pricePerKm ?? 0)} đ',
+                                            style: const TextStyle(
+                                                color: priceColor)),
+                                        Text(
+                                            ' ( ${(distance.values.first)} Km )',
+                                            style: const TextStyle(
+                                                color: Colors.red,
+                                                fontSize: 15)),
+                                      ],
+                                    )
+                                  ],
+                                ) : const SizedBox(),
+                                widget.isDelivery ? Center(
+                                  child: Column(children: [
+                                    const Text('Tổng cộng : ',
+                                        style: TextStyle(
+                                            color: darkText,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500)),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                        '${f.format((widget.listPlant.fold(0.0, (sum, item) => sum + item.plantPrice! * item.quantity!)) + (widget.listPlant.fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!)) + ((distance.values.first) * distancePrice.pricePerKm ?? 0))} đ',
+                                        style: const TextStyle(
+                                            color: priceColor,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500)),
+                                  ]),
+                                ) : const SizedBox()
+                              ]),
+                        ),
                       ),
-                    ),
-                    actions: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: 110,
-                              height: 45,
-                              decoration: BoxDecoration(
-                                  color: buttonColor,
-                                  borderRadius:
-                                  BorderRadius.circular(50)),
-                              child: const Text('Quay lại',
-                                  style: TextStyle(
-                                      color: lightText,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500)),
+                      actions: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const SizedBox(
+                              width: 10,
                             ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              OverlayLoadingProgress.start(context);
-                              print("data: " + data.toString() );
-                              _orderProvider
-                                  .createOrder(data)
-                                  .then((value) {
-                                if (value) {
-                                  cartBloc.send(GetCart());
-                                  Fluttertoast.showToast(
-                                      msg: "Tạo Đơn Hàng Thành Công",
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.BOTTOM,
-                                      timeInSecForIosWeb: 1,
-                                      backgroundColor: buttonColor,
-                                      textColor: Colors.white,
-                                      fontSize: 16.0);
-                                  Navigator.pop(context);
-                                  Navigator.pop(context);
-                                  Navigator.pop(context);
-                                } else {
-                                  Fluttertoast.showToast(
-                                      msg: "Tạo Đơn Hàng Thất Bại",
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.BOTTOM,
-                                      timeInSecForIosWeb: 1,
-                                      backgroundColor: Colors.red,
-                                      textColor: Colors.white,
-                                      fontSize: 16.0);
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                alignment: Alignment.center,
+                                width: 110,
+                                height: 45,
+                                decoration: BoxDecoration(
+                                    color: buttonColor,
+                                    borderRadius:
+                                    BorderRadius.circular(50)),
+                                child: const Text('Quay lại',
+                                    style: TextStyle(
+                                        color: lightText,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500)),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                OverlayLoadingProgress.start(context);
+                                if(!COD){
+                                  vnPayPayment(order, plant);
                                 }
-                                OverlayLoadingProgress.stop();
-                              });
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: 110,
-                              height: 45,
-                              decoration: BoxDecoration(
-                                  color: buttonColor,
-                                  borderRadius:
-                                  BorderRadius.circular(50)),
-                              child: const Text('Xác Nhận',
-                                  style: TextStyle(
-                                      color: lightText,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500)),
+                                else{
+                                  var data = order.createOrder(plant, widget.isDelivery ? distance.keys.first : user!.storeID,
+                                      widget.isDelivery ? distancePrice.distancePriceID : 'DP002', user!.userID, null, cusID);
+                                  _orderProvider
+                                      .createOrder(data)
+                                      .then((value) {
+                                    if (value) {
+                                      cartBloc.send(GetCart());
+                                      Fluttertoast.showToast(
+                                          msg: "Tạo Đơn Hàng Thành Công",
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: buttonColor,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0);
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                        builder: (context) => HistoryScreen(index: 0),
+                                      ));
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg: "Tạo Đơn Hàng Thất Bại",
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: Colors.red,
+                                          textColor: Colors.white,
+                                          fontSize: 16.0);
+                                    }
+                                    OverlayLoadingProgress.stop();
+                                  });
+                                }
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                width: 110,
+                                height: 45,
+                                decoration: BoxDecoration(
+                                    color: buttonColor,
+                                    borderRadius:
+                                    BorderRadius.circular(50)),
+                                child: const Text('Xác Nhận',
+                                    style: TextStyle(
+                                        color: lightText,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500)),
+                              ),
                             ),
-                          ),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                        ],
-                      )
-                    ],
-                  );
-                },
-              );
+                            const SizedBox(
+                              width: 10,
+                            ),
+                          ],
+                        )
+                      ],
+                    );
+                  },
+                );
+              } else {
+
+              }
             },
             child: Container(
               margin: const EdgeInsets.only(left: 10, right: 10),
@@ -651,15 +760,8 @@ class _OrderScreenState extends State<OrderScreen> {
       ],
     );
   }
-
   bool _visibility = false;
   Widget _shipTab(List<OrderCart> listPlant) {
-    List <ListSlot> _slot = [
-      //[0]: slot
-      ListSlot(description: ['6:30-7:00AM','12:00-12:30PM','5:30-6:00PM']),
-      //[1]: collection
-      ListSlot(description: ["Sua hat","Sua oc cho","Sua hanh nhan","Sua dau nanh"]),
-    ] ;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -671,45 +773,70 @@ class _OrderScreenState extends State<OrderScreen> {
                 color: darkText, fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ),
+        //sdt
+        Stack(
+          children: [
+            _textFormField("Số điện thoại người nhận", 'Nhập số điện thoại', false,
+                null, _phoneController),
+            Positioned(
+              right: MediaQuery.of(context).size.width * 0.15,
+              top: 25,
+              child: GestureDetector(
+                onTap: () {
+                  getCusInfor(_phoneController.text);
+                },
+                child: Icon(Icons.search, color: buttonColor,),
+              ),
+            )
+          ],
+        ),
+        isPhone ? const SizedBox() : const Center(child: Text('Số điện thoại không hợp lệ' , style: TextStyle(fontSize: 10, color: ErorText),)),
         //Full name
         _textFormField("Tên người nhận", 'Nhập tên người nhận', false, null,
             _nameController),
+        isName ? const SizedBox() : const Center(child: Text('Tên quá dài/ không hợp lệ' , style: TextStyle(fontSize: 10, color: ErorText),)),
         //Email
         _textFormField("Email người nhận", 'Nhập Email người nhận', false, null,
             _emailController),
-        //Phone
-        _textFormField("Số điện thoại người nhận", 'Nhập số điện thoại', false,
-            null, _phoneController),
+        isEmail ? const SizedBox() : const Center(child: Text('Email không hợp lệ' , style: TextStyle(fontSize: 10, color: ErorText),)),
         //address
         _textFormField(
-            "Địa chỉ giao hàng", 'Bấm vào đây để chọn địa chỉ !!!', false, /*() {
+            "Địa chỉ giao hàng", 'Bấm vào đây để chọn địa chỉ !!!', false, widget.isDelivery ? () {
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => MapScreen(callback: setAdress),
           ));
-        }*/ null, _addressController),
+        } : null , _addressController),
+        isAddress ? const SizedBox() : const Center(child: Text('địa chỉ quá dài/ không hợp lệ' , style: TextStyle(fontSize: 10, color: ErorText),)),
         Container(
           padding: const EdgeInsets.all(10),
-          child:  const Text(
-            'Kiểm tra phí giao hàng: ',
-            style: TextStyle(
+          child:  Text(widget.isDelivery ? 'Kiểm tra phí giao hàng: ' : 'Khách hàng tự vận chuyển',
+            style: const TextStyle(
                 color: darkText, fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ),
-        Row(
+        widget.isDelivery ? Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             GestureDetector(
               onTap: () {
-                setState(() {
-                  _addressController == null ? (_visibility = false) : (_visibility = true);
-                  isFT = false;
-                  getListStore();
-                });
+                if(countSpaces(_addressController.text) >= 30 || _addressController.text.length >= 120 || _addressController.text == ''){
+                  setState(() {
+                    isAddress = false;
+                  });
+                }else
+                {
+                  setState(() {
+                    _addressController == null ? (_visibility = false) : (_visibility = true);
+                    isFT = false;
+                    isAddress = true;
+                    getListStore();
+                  });
+                }
               },
               child: checkDeliveryFee('Kiểm tra phí giao hàng'),
             ),
           ],
-        ),
+        ) : const SizedBox(),
         /*_addressController == null ? const Text('Vui lòng nhập địa chỉ', style: TextStyle(
           color: Colors.red,
           fontSize: 12,
@@ -732,7 +859,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       fontWeight: FontWeight.w500),
                 ),
               ),
-              (!isLoading)
+              (!isLoading && widget.isDelivery)
                   ? Container(
                 padding: const EdgeInsets.all(10),
                 child: Column(
@@ -744,7 +871,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             style: TextStyle(
                                 color: darkText, fontSize: 16)),
                         Text(
-                            _storeProvider.list!.first.storeName,
+                            storeName,
                             style: const TextStyle(
                                 color: darkText, fontSize: 18, fontWeight: FontWeight.bold)),
                       ],
@@ -753,7 +880,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     Container(
                       width: MediaQuery.of(context).size.width - 10,
                       child:  AutoSizeText(
-                          '(' + _storeProvider.list!.first.address + ')',
+                          '(' + storeAddress + ')',
                           style: const TextStyle(
                               color: darkText, fontSize:12)),
                     ),
@@ -800,14 +927,14 @@ class _OrderScreenState extends State<OrderScreen> {
                   : const Center(
                 child: CircularProgressIndicator(),
               ),
-              Container(
+              /*Container(
                 padding: const EdgeInsets.only(left: 10),
                 child: Text('Phí vận chuyển: (${distancePrice.pricePerKm} / km)',
                     style: const TextStyle(
                       color: Colors.red,
                       fontSize: 12,
                     ))
-              ),
+              ),*/
 
             ],
           ),
@@ -861,7 +988,7 @@ class _OrderScreenState extends State<OrderScreen> {
             const SizedBox(
               width: 20,
             ),
-            const Text('Chuyển Khoản')
+            const Text('Trực tuyến')
           ],
         )
       ],
@@ -963,9 +1090,97 @@ class _OrderScreenState extends State<OrderScreen> {
       ),
     );
   }
-}
-enum Menu { menuOne, menuTwo, menuThree }
-class ListSlot{
-  List description = [];
-  ListSlot({required this.description});
+
+  vnPayPayment(order, plant) {
+    double priceTotal = widget.isDelivery ? ((widget.listPlant.fold(
+        0.0, (sum, item) => sum + item.plantPrice! * item.quantity!)) +
+        (widget.listPlant
+            .fold(0.0, (sum, item) => sum + item.shipPrice! * item.quantity!)) +
+        (distance.values.first) * distancePrice.pricePerKm) : ((widget.listPlant
+        .fold(
+        0.0, (sum, item) => sum + item.plantPrice! * item.quantity!)));
+    Map<String, dynamic> map =
+    ({'amount': priceTotal, 'reason': '${cusID}-Thanh Toan Truc Tuyen'});
+    OrderProvider().payment(map).then((value) {
+      if (value.isNotEmpty) {
+        VNPAYFlutter.instance.show(
+            paymentUrl: value,
+            onPaymentSuccess: (params) {
+              var data = order.createOrder(plant,
+                  widget.isDelivery ? distance.keys.first : user!.storeID,
+                  widget.isDelivery ? distancePrice.distancePriceID : 'DP002',
+                  user!.userID, params['vnp_TransactionNo'], cusID);
+              _orderProvider.createOrder(data).then((value) {
+                if (value) {
+                  cartBloc.send(GetCart());
+                  Fluttertoast.showToast(
+                      msg: "Tạo Đơn Hàng Thành Công",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: buttonColor,
+                      textColor: Colors.white,
+                      fontSize: 16.0);
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (context) => HistoryScreen(index: 0),
+                  ));
+                } else {
+                  Fluttertoast.showToast(
+                      msg: "Tạo Đơn Hàng Thất Bại",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white,
+                      fontSize: 16.0);
+                }
+                OverlayLoadingProgress.stop();
+              });
+            }, //on mobile transaction success
+            onPaymentError: (params) {
+              Fluttertoast.showToast(
+                  msg: "Thanh Toán Thất Bại",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.red,
+                  textColor: Colors.white,
+                  fontSize: 16.0);
+            }, //on mobile transaction error
+            onWebPaymentComplete: () {} //only use in web
+        );
+      } else {
+        Fluttertoast.showToast(
+            msg: "Lỗi hệ thống",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
+    });
+  }
+
+  int countSpaces(String text) {
+    List<String> words = text.split(" ");
+    int spaceCount = words.length - 1;
+    return spaceCount;
+  }
+
+  bool checkStartsWithZero(String input) {
+    return input.startsWith('0');
+  }
+
+  bool validateEmail(String input) {
+    // Nếu input là null hoặc chuỗi rỗng, coi là hợp lệ
+    if (input == null || input.isEmpty) {
+      return true;
+    }
+
+    RegExp regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return regex.hasMatch(input);
+  }
 }

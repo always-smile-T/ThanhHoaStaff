@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:thanhhoa_garden_staff_app/components/button/dialog_button.dart';
 import '../../components/profile/genderField.dart';
 import '../../components/profile/infoField.dart';
 import '../../components/profile/textField.dart';
@@ -19,28 +20,25 @@ class ManagerProfileScreen extends StatefulWidget {
 
 class _ManagerProfileScreenState extends State<ManagerProfileScreen>
     with SingleTickerProviderStateMixin {
-
-  bool _setState = true;
-
-  String? selectedIndexCategory = 'Nữ';
-  List<String> listOfCategory = ['Nam','Nữ'];
+  bool COD = true;
 
   TextEditingController _nameController = TextEditingController();
   TextEditingController _phoneNumberController = TextEditingController();
-  TextEditingController _dayOfBirth = TextEditingController();
-  TextEditingController _monthOfBirth = TextEditingController();
-  TextEditingController _yearOfBirth = TextEditingController();
-  TextEditingController _gender = TextEditingController();
-  TextEditingController _firstName = TextEditingController();
-  TextEditingController _lastName = TextEditingController();
+  TextEditingController _addressController = TextEditingController();
   @override
   void initState() {
     super.initState();
+    setState(() {
+       COD = widget.user!.gender;
+       _nameController = TextEditingController(text : widget.user!.fullName);
+       _phoneNumberController = TextEditingController(text : widget.user!.phone);
+       _addressController = TextEditingController(text : widget.user!.address);
+
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    String? dropdownNames;
     return Scaffold(
         backgroundColor: background,
         body: SingleChildScrollView(
@@ -81,7 +79,7 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen>
                           height: 138,
                           child: CircleAvatar(
                             radius: 15,
-                            backgroundImage: /*widget.user!.avatar! != null ? NetworkImage(widget.user!.avatar) : */NetworkImage(getImageNoAvailableURL),
+                            backgroundImage: widget.user!.avatar! != null ? NetworkImage(widget.user!.avatar) : NetworkImage(getImageNoAvailableURL),
                           ),
                         ),
                       ),
@@ -99,7 +97,7 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen>
                     ),
                     Container(
                       margin: const EdgeInsets.all(20),
-                      height: 400,
+                     // height: 400,
                       width: MediaQuery.of(context).size.width,
                       decoration: const BoxDecoration(
                           color: barColor,
@@ -108,39 +106,84 @@ class _ManagerProfileScreenState extends State<ManagerProfileScreen>
                       ),
                       child: Column(
                         children: [
-                          TextFieldBox(title: 'Tên', width: 300, height: 30, controller: _nameController, hintText: 'Nguyễn Thị Thu Thảo'),
+                          TextFieldBox(title: 'Tên', width: 300, height: 30, controller: _nameController, hintText: 'Nguyễn Thị Thu Thảo', readOnly: true,),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              TextFieldBox(title: 'ID', width: 120, height: 30, controller: _firstName, hintText: '16'),
-                              TextFieldBox(title: 'Store ID', width: 120, height: 30, controller: _lastName, hintText: 'S005'),
+                              InfoField(title: 'ID', des: widget.user!.userID.toString(), width: 120, height: 30,),
+                              InfoField(title: 'Username', des: widget.user!.username, width: 120, height: 30,),
                             ],
                           ),
-                          InfoField(title: 'Email', des: 'thuhao121401@gmail.com', width: 300, height: 30,),
+                          InfoField(title: 'Email', des: widget.user!.email, width: 300, height: 30,),
+                          TextFieldBox(title: 'Số điện thoại', width: 300, height: 30, controller: _phoneNumberController, hintText: 'Nhập số điện thoại', readOnly: true),
+                         TextFieldBox(title: 'Địa chỉ', width: 300, height: 30, controller: _addressController, hintText: 'Nhập địa chỉ', readOnly: false),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              TextFieldBox(title: 'Ngày', width: 70, height: 30, controller: _dayOfBirth, hintText: _dayOfBirth.text),
-                              TextFieldBox(title: 'Tháng', width: 70, height: 30, controller: _monthOfBirth, hintText: _monthOfBirth.text),
-                              TextFieldBox(title: 'Năm', width: 70, height: 30, controller: _yearOfBirth, hintText: _yearOfBirth.text),
-                            ],
-                          ),
-                          TextFieldBox(title: 'Số điện thoại', width: 300, height: 30, controller: _phoneNumberController, hintText: '0868282998'),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ProfileGender(gen: 'Nữ'),
-                              const InfoField(title: 'Ngày Đăng Ký', des: '07/08/2023', width: 160, height: 30,),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    checkColor: Colors.white,
+                                    fillColor: MaterialStateProperty.resolveWith(getColor),
+                                    value: COD,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        COD = value!;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  const Text('Nam')
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    checkColor: Colors.white,
+                                    fillColor: MaterialStateProperty.resolveWith(getColor),
+                                    value: !COD,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        COD = !value!;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  const Text('Nữ')
+                                ],
+                              )
                             ],
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20,)
                   ],
-                ),)
+                ),),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ConfirmButton(title: 'Lưu', width: 100.0),
+                  const SizedBox(width: 40,)
+                ],
+              ),
+              const SizedBox(height: 30,)
             ],
           ),
         ));
+  }
+  Color getColor(Set<MaterialState> states) {
+    const Set<MaterialState> interactiveStates = <MaterialState>{
+      MaterialState.pressed,
+      MaterialState.hovered,
+      MaterialState.focused,
+    };
+    if (states.any(interactiveStates.contains)) {
+      return Colors.blue;
+    }
+    return buttonColor;
   }
 }

@@ -38,6 +38,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   String status = 'ALL';
   int checkState = 0;
   final _scrollController = ScrollController();
+  String currentStatus = 'ALL';
 
   late OrderBloc orderBloc;
   late Stream<OrderState> orderStream;
@@ -192,6 +193,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               setState(() {
                 selectedTab = index;
                 status = enumStatus[index];
+                currentStatus = enumStatus[index];
                 listOrder.clear();
                 pageNo = 0;
               });
@@ -265,7 +267,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => OrderDetailScreen(order: order),
+              builder: (context) => OrderDetailScreen(order: order, orderID: null, whereCall: 1),
             ));
       },
       child: Container(
@@ -286,7 +288,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     borderRadius: BorderRadius.circular(10),
                     image: DecorationImage(
                         fit: BoxFit.cover,
-                        image: order.progressStatus! == "RECEIVED" ? NetworkImage(order.receiptIMG ?? NoIMG) :
+                        image: order.progressStatus! == "RECEIVED" ? NetworkImage(order.receiptIMG ?? order.showPlantModel!.image) :
                         NetworkImage(order.showPlantModel!.image ?? NoIMG)),
                   )),
               Padding(
@@ -424,7 +426,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ),
         GestureDetector(
           onTap: () {
-            showdialogConfirm('PACKAGING', order, 'đống gói', null);
+            showdialogConfirm('PACKAGING', order, 'đống gói');
           },
           child: comfirmButton('đóng gói'),
         )
@@ -441,7 +443,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ),
         GestureDetector(
           onTap: () {
-            showdialogConfirm('DELIVERING', order, 'Giao hàng', null);
+            showdialogConfirm('DELIVERING', order, 'Giao hàng');
           },
           child: comfirmButton('Giao hàng'),
         )
@@ -456,8 +458,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ),
         GestureDetector(
           onTap: () {
-            _pickImage(ImageSource.gallery);
-            showdialogConfirm('RECEIVED', order, 'Đã nhận', imgURL.first);
+            showdialogConfirm('RECEIVED', order, 'Đã nhận');
           },
           child: comfirmButton('Đã nhận'),
         )
@@ -508,11 +509,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     );
   }
 
-  dynamic showdialogConfirm(String status, OrderObject order, confirmStatus, img /*, isReceived*/) {
+  dynamic showdialogConfirm(String status, OrderObject order, confirmStatus/*, isReceived*/) {
     var size = MediaQuery.of(context).size;
     return showDialog(
         context: context,
         builder: (BuildContext context) {
+          status == "RECEIVED" ? _pickImage(ImageSource.gallery) : null;
           return AlertDialog(
             title: Center(
               child: Text(
@@ -545,75 +547,25 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      ChangeStatusOrder(order.id, status, img);
-                      Navigator.of(context).pop();
-                      /*Navigator.of(context)
-                          .pushReplacement(MaterialPageRoute(
-                          builder: (context) => const OrderHistoryScreen()));*/
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      width: 110,
-                      height: 45,
-                      decoration: BoxDecoration(
-                          color: buttonColor,
-                          borderRadius: BorderRadius.circular(50)),
-                      child: const Text('Xác nhận',
-                          style: TextStyle(
-                              color: lightText,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500)),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                ],
-              )
-            ],
-          );
-        });
-  }
-
-  dynamic showdialogConfirmRecevied(String status, OrderObject order, confirmStatus, img /*, isReceived*/) {
-    var size = MediaQuery.of(context).size;
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Center(
-              child: Text(
-                'Tiến hành Xác nhận hình ảnh',
-                style: TextStyle(color: buttonColor, fontSize: 25),
-              ),
-            ),
-            actions: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      alignment: Alignment.center,
-                      width: 110,
-                      height: 45,
-                      decoration: BoxDecoration(
-                          color: buttonColor,
-                          borderRadius: BorderRadius.circular(50)),
-                      child: const Text('Quay lại',
-                          style: TextStyle(
-                              color: lightText,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500)),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      _pickImage(ImageSource.gallery);
-                      showdialogConfirm('RECEIVED', order, 'Đã nhận', imgURL.first);
+                      print("currentStatus: " + currentStatus.toString());
+                      if(status == "RECEIVED"){
+                        Navigator.of(context).pop();
+                        setState(() {
+                          ChangeStatusOrder(order.id, status, imgURL.last);
+                          listOrder.clear();
+                        });
+                        _searchOrder(
+                            0, PageSize, 'CREATEDDATE', false, currentStatus);
+                      }
+                      else{
+                        setState(() {
+                          Navigator.of(context).pop();
+                          ChangeStatusOrder(order.id, status, null);
+                          listOrder.clear();
+                        });
+                        _searchOrder(
+                            0, PageSize, 'CREATEDDATE', false, currentStatus);
+                      }
                     },
                     child: Container(
                       alignment: Alignment.center,

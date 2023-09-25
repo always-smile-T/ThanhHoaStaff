@@ -60,6 +60,8 @@ const getScheduleInWeekURL = '/contract/getContractDetailByStaffTokenAndDate?';
 //ScheduleDetail
 const getScheduleDetailURL = '/workingDate/getByWorkingDate?';
 const confirmWorkingURL = '/workingDate/addWorkingDate?contractDetailID=';
+const getWorkingURL = '/workingDate/v2/getByWorkingDate?';
+const getWorkingDetailURL = '/workingDate/getWorkingDateByContractDetailID?';
 
 //cart
 const cartURL = '/cart';
@@ -97,3 +99,8 @@ const getReportByToken = '/report/getByCustomerToken';
 const notificationURL = '/notification';
 const checkReadOneURL = '/notification/isRead?notificationID=';
 const checkReadAllURL = '/notification/isReadByToken';
+
+
+
+//payment
+const paymentURL = '/vnpay/submitOrder';

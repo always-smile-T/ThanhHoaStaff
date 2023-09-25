@@ -11,6 +11,7 @@ import '../../blocs/service/service_state.dart';
 import '../../constants/constants.dart';
 import '../../models/authentication/user.dart';
 import '../../providers/authentication/authantication_provider.dart';
+import '../../providers/store/my_store.dart';
 import '../../screens/bonsai/searchScreen.dart';
 import '../authentication/loginPage.dart';
 import '../authentication/manaProfilePage.dart';
@@ -37,6 +38,16 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription<BonsaiState>? _bonsaiStateSubscription;
   late Stream<BonsaiState> bonsaiStream;
   late Stream<ServiceState> serviceStream;
+  String storeName = '';
+  String storeAddress = '';
+
+  Future getStore() async {
+    var myStore = await FetchInfoMyStore(widget.user!.storeID);
+    setState(() {
+      storeName = myStore.storeName.toString();
+      storeAddress = myStore.address.toString();
+    });
+  }
 
 
   @override
@@ -47,6 +58,7 @@ class _HomePageState extends State<HomePage> {
 
     bonsaiStream = bonsaiBloc.authStateStream;
     serviceStream = serviceBloc.authStateStream;
+    getStore();
   }
 
   @override
@@ -68,7 +80,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    print("avata link: "+ widget.user!.avatar);
     var size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: background,
@@ -101,7 +112,7 @@ class _HomePageState extends State<HomePage> {
                   GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const OrderHistoryScreen(),
+                          builder: (context) => OrderHistoryScreen(),
                         ));
                       },
                       child: _dashboardButton('Đơn đã đặt')),
@@ -137,7 +148,7 @@ class _HomePageState extends State<HomePage> {
                   GestureDetector(
                     onTap: (){
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const SchedulePage(),
+                        builder: (context) => SchedulePage(staffID: widget.user!.userID),
                       ));
                     },
                     child: _dashboardButton('Lich Chăm Sóc Cây'),
@@ -146,7 +157,7 @@ class _HomePageState extends State<HomePage> {
                   GestureDetector(
                     onTap: (){
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ContractPage(contractID: '0'),
+                        builder: (context) => ContractPage(),
                       ));
                     },
                     child: _dashboardButton('Hợp Đồng Liên Quan'),
@@ -204,8 +215,8 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         _appBarButton(const NotificationPage(),Icons.notifications_none),
-                        const SizedBox(width: 10,),
-                        _appBarButton( ManagerProfileScreen(user: widget.user!),Icons.settings),
+                        /*const SizedBox(width: 10,),
+                        _appBarButton( ManagerProfileScreen(user: widget.user!),Icons.settings),*/
                         const SizedBox(width: 20,),
                       ],
                     ),
@@ -231,7 +242,8 @@ class _HomePageState extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(widget.user!.fullName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),),
+                            Text(widget.user!.fullName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),),
+                            const SizedBox(height: 5,),
                             Row(
                               children: [
                                 Column(
@@ -239,9 +251,8 @@ class _HomePageState extends State<HomePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: const [
                                     Text('Tài Khoản:'),
-                                    Text('Địa Chỉ:'),
-                                    Text('Điện Thoại:'),
-                                    Text('Trạng Thái:'),
+                                    Text('Cửa hàng:'),
+                                    Text('Địa chỉ:'),
                                   ],
                                 ),
                                 const SizedBox(width: 20,),
@@ -250,9 +261,8 @@ class _HomePageState extends State<HomePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text('Nhân viên'),
-                                    Text(widget.user!.address),
-                                    Text(widget.user!.phone),
-                                    Text(widget.user!.status == 'ACTIVE' ? 'Đang hoạt động' : 'Tạm dừng'),
+                                    Text(storeName),
+                                    Text(storeAddress.toString().length >= 22 ? storeAddress.toString().substring(0,22) + "..." : storeAddress.toString()),
                                   ],
                                 )
                               ],

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:geolocator/geolocator.dart';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoder2/geocoder2.dart';
 
 import '../../components/appBar.dart';
 import '../../constants/constants.dart';
 import '../../models/store/store.dart';
-import 'package:geocoder2/geocoder2.dart';
 import '../../providers/store/store_provider.dart';
 
 class MapScreen extends StatefulWidget {
-  Function callback;
+  final Function callback;
   MapScreen({super.key, required this.callback});
 
   @override
@@ -28,7 +29,7 @@ class _MapScreenState extends State<MapScreen> {
 
   Marker? selectMarker;
 
-  double _distance = 0.0;
+  // double _distance = 0.0;
   double? lat;
   double? long;
 
@@ -59,30 +60,49 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   getCoordinatesFromAddress(String address, String title) async {
-    GeoData data = await Geocoder2.getDataFromAddress(
-        address: address, googleMapApiKey: GG_API_Key, language: 'vi');
-    if (title == 'search') {
-      setState(() {
-        selectMarker = Marker(
-          markerId: MarkerId(data.address),
-          infoWindow: const InfoWindow(title: 'Vị trí của bạn'),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          position: LatLng(data.latitude, data.longitude),
-        );
+    try {
+      await Geocoder2.getDataFromAddress(
+          address: address, googleMapApiKey: GG_API_Key, language: 'vi')
+          .then((value) {
+        if (value.address.isNotEmpty) {
+          error = '';
+          if (title == 'search') {
+            setState(() {
+              selectMarker = Marker(
+                markerId: MarkerId(value.address),
+                infoWindow: const InfoWindow(title: 'Vị trí của bạn'),
+                icon: BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueBlue),
+                position: LatLng(value.latitude, value.longitude),
+              );
+              origin = LatLng(value.latitude, value.longitude);
+            });
+          } else {
+            var _storeMarker = Marker(
+              markerId: MarkerId(value.address),
+              infoWindow: InfoWindow(title: title),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueRed),
+              position: LatLng(value.latitude, value.longitude),
+            );
+            setState(() {
+              _makers.add(_storeMarker);
+            });
+          }
+        } else {
+          error = 'Error';
+        }
       });
-    } else {
-      var _storeMarker = Marker(
-        markerId: MarkerId(data.address),
-        infoWindow: InfoWindow(title: title),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        position: LatLng(data.latitude, data.longitude),
-      );
+    } catch (e) {
       setState(() {
-        _makers.add(_storeMarker);
+        error = e.toString();
       });
+
+      print(e.toString());
     }
   }
 
+  String error = '';
   Future<String> getAddressFromCoordinates(LatLng pos) async {
     String result = "";
     GeoData data = await Geocoder2.getDataFromCoordinates(
@@ -99,6 +119,7 @@ class _MapScreenState extends State<MapScreen> {
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         position: LatLng(data.latitude, data.longitude),
       );
+      origin = LatLng(data.latitude, data.longitude);
     });
 
     return result;
@@ -166,6 +187,7 @@ class _MapScreenState extends State<MapScreen> {
             _mapController.animateCamera(
               CameraUpdate.newCameraPosition(cameraPosition),
             );
+            _addMarker(LatLng(value.latitude, value.longitude));
           });
         },
         child: const Icon(Icons.center_focus_strong),
@@ -200,9 +222,48 @@ class _MapScreenState extends State<MapScreen> {
             },
             controller: _searchController,
             decoration: InputDecoration(
-              suffixIcon: IconButton(
+              prefixIcon: IconButton(
+                onPressed: () {
+                  setState(() {
+                    if (_searchController.text.isEmpty || error.isNotEmpty) {
+                      Fluttertoast.showToast(
+                          msg: "Kiểm tra lại địa chỉ của bạn",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.green,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                    } else {
+                      CameraPosition cameraPosition = CameraPosition(
+                        target: LatLng(selectMarker!.position.latitude,
+                            selectMarker!.position.longitude),
+                        zoom: 11,
+                      );
+                      _mapController.animateCamera(
+                        CameraUpdate.newCameraPosition(cameraPosition),
+                      );
+                    }
+                  });
+                },
+                icon: const Icon(Icons.search),
+              ),
+              suffixIcon: _searchController.text.isEmpty
+                  ? null
+                  : IconButton(
                 onPressed: () {
                   _searchController.clear();
+                  setState(() {
+                    origin = LatLng(0, 0);
+                    selectMarker = Marker(
+                      markerId: const MarkerId('Bạn'),
+                      infoWindow:
+                      const InfoWindow(title: 'Vị trí của bạn'),
+                      icon: BitmapDescriptor.defaultMarkerWithHue(
+                          BitmapDescriptor.hueBlue),
+                      position: origin,
+                    );
+                  });
                 },
                 icon: const Icon(Icons.close),
               ),
@@ -227,8 +288,19 @@ class _MapScreenState extends State<MapScreen> {
         ),
         GestureDetector(
           onTap: () {
-            widget.callback(_searchController.text, origin);
-            Navigator.pop(context);
+            if (_searchController.text.isEmpty || error.isNotEmpty) {
+              Fluttertoast.showToast(
+                  msg: "Kiểm tra lại địa chỉ của bạn",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.green,
+                  textColor: Colors.white,
+                  fontSize: 16.0);
+            } else {
+              widget.callback(_searchController.text, origin);
+              Navigator.pop(context);
+            }
           },
           child: Container(
               width: 50,

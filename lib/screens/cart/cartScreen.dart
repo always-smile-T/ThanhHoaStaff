@@ -116,6 +116,7 @@ class _CartScreenState extends State<CartScreen> {
         }
     }
   }
+  bool isDelivery = true;
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +152,69 @@ class _CartScreenState extends State<CartScreen> {
                   decoration: const BoxDecoration(color: divince),
                 ),
                 Container(
+                  padding: const EdgeInsets.only(left: 20, right: 30),
+                  height: 80,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.only(left: 15, top: 5),
+                        child: const Text(
+                          'Có giao hàng không?',
+                          style: TextStyle(
+                              color: darkText, fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Checkbox(
+                                checkColor: Colors.white,
+                                fillColor: MaterialStateProperty.resolveWith(getColor),
+                                value: isDelivery,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isDelivery = value!;
+                                  });
+                                },
+                              ),
+                              /*const SizedBox(
+                        width: 5,
+                      ),*/
+                              const Text('giao hàng')
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Checkbox(
+                                checkColor: Colors.white,
+                                fillColor: MaterialStateProperty.resolveWith(getColor),
+                                value: !isDelivery,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isDelivery = !value!;
+                                  });
+                                },
+                              ),
+                              /*const SizedBox(
+                        width: 5,
+                      ),*/
+                              const Text('không giao')
+                            ],
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 10,
+                  decoration: const BoxDecoration(color: divince),
+                ),
+                Container(
                   height: 65,
                 ),
               ]),
@@ -158,6 +222,18 @@ class _CartScreenState extends State<CartScreen> {
             Positioned(top: size.height - 65, child: _floatingBar()),
           ],
         ));
+  }
+
+  Color getColor(Set<MaterialState> states) {
+    const Set<MaterialState> interactiveStates = <MaterialState>{
+      MaterialState.pressed,
+      MaterialState.hovered,
+      MaterialState.focused,
+    };
+    if (states.any(interactiveStates.contains)) {
+      return Colors.blue;
+    }
+    return buttonColor;
   }
 
   Widget _floatingBar() {
@@ -169,15 +245,6 @@ class _CartScreenState extends State<CartScreen> {
       decoration: const BoxDecoration(color: barColor),
       child: Row(
         children: [
-          // Checkbox(
-          //   value: true,
-          //   onChanged: (value) {
-          //     if (value!) {}
-          //   },
-          // ),
-          // const Text('Tất cả',
-          //     style: TextStyle(
-          //         color: darkText, fontSize: 16, fontWeight: FontWeight.w500)),
           Spacer(),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -219,7 +286,7 @@ class _CartScreenState extends State<CartScreen> {
                     fontSize: 16.0);
               } else {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => OrderScreen(listPlant: litsPlantinCart),
+                  builder: (context) => OrderScreen(listPlant: litsPlantinCart, isDelivery: isDelivery),
                 ));
               }
             },

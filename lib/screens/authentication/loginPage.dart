@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
@@ -61,11 +61,10 @@ class _LoginPageState extends State<LoginPage> {
           decoration: const BoxDecoration(gradient: tabBackground),
           child: Stack(
             children: [
-              Image(
+              SvgPicture.asset(
+                'assets/Logo2.svg',
                 height: size.height * 0.57,
                 width: size.width,
-                image: const AssetImage('assets/Logo.png'),
-                fit: BoxFit.cover,
               ),
               Container(
                 padding: const EdgeInsets.only(left: 5, right: 5),

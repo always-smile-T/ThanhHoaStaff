@@ -22,6 +22,8 @@ String formatStatus (status) {
     break;
     case 'DONE' : fStatus = 'Hoàn thành';
     break;
+    case 'CONFIRMING' : fStatus = 'Đang xác thực';
+    break;
     default : fStatus = 'Đang cập nhật';
   }
 
@@ -48,6 +50,8 @@ Color formatColorStatus (status) {
     break;
     case 'APPROVED' : fStatus = buttonColor;
     break;
+    case 'CONFIRMING' : fStatus = Colors.purple;
+    break;
     default : fStatus = Colors.black;
   }
 
@@ -62,6 +66,65 @@ String formatReport (report) {
     case 'ACTIVE' : fReport = 'Đã duyệt';
     break;
     case 'CANCEL' : fReport = 'Đã huỷ';
+    break;
+    default : fReport = 'Đang cập nhật';
+  }
+
+  return fReport;
+}
+
+String formatContractStatus (status) {
+  String fStatus = '';
+  switch (status) {
+    case 'SIGNED' : fStatus = 'Đến xem lịch >>>';
+    break;
+    case 'WORKING' : fStatus = 'Đến xem lịch >>>';
+    break;
+    case 'DONE' : fStatus = 'Đến xem lịch >>>';
+    break;
+    case 'APPROVED' : fStatus = 'Đến xác nhận >>>';
+    break;
+    case 'CONFIRMING' : fStatus = 'Duyệt hợp đồng >>>';
+    break;
+    default : fStatus = '';
+  }
+  return fStatus;
+}
+
+String formatCheckContract(status) {
+  String fStatus = '';
+  switch (status) {
+    case 'APPROVED' : fStatus = 'Đến Nhà Khách Hàng';
+    break;
+    case 'CONFIRMING' : fStatus = 'Ký Hợp Đồng';
+    break;
+    default : fStatus = '';
+  }
+  return fStatus;
+}
+
+bool checkContractStatus (status) {
+  bool fStatus = false;
+  switch (status) {
+    case 'SIGNED' : fStatus = true;
+    break;
+    case 'WORKING' : fStatus = true;
+    break;
+    case 'DONE' : fStatus = true;
+    break;
+    default : fStatus = false;
+  }
+  return fStatus;
+}
+
+String formatWorkingStatus (report) {
+  String fReport = '';
+  switch (report) {
+    case 'WAITING' : fReport = 'Chưa bắt đầu';
+    break;
+    case 'WORKING' : fReport = 'Đang làm';
+    break;
+    case 'DONE' : fReport = 'Đã hoàn thành';
     break;
     default : fReport = 'Đang cập nhật';
   }

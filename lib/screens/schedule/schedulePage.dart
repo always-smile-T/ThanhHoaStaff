@@ -20,7 +20,8 @@ import '../../utils/showDialog/show_dialog.dart';
 import '../contract/contractPageDetail.dart';
 
 class SchedulePage extends StatefulWidget {
-  const SchedulePage({super.key});
+  const SchedulePage({super.key, required this.staffID});
+  final staffID;
 
 
   @override
@@ -50,13 +51,13 @@ class _SchedulePageState extends State<SchedulePage> {
           const SizedBox(
             height: 5,
           ),
-          Center(
+          /*Center(
             child: Container(
               height: 1,
               width: size.width - 180,
               decoration: const BoxDecoration(color: buttonColor),
             ),
-          ),
+          ),*//*
           const SizedBox(
             height: 20,
           ),
@@ -65,7 +66,7 @@ class _SchedulePageState extends State<SchedulePage> {
             height: 50,
             width: size.width,
             child: _listCategory(),
-          ),
+          ),*/
           Container(
             height: 10,
             decoration: const BoxDecoration(color: divince),
@@ -76,143 +77,17 @@ class _SchedulePageState extends State<SchedulePage> {
             width: size.width,
             child: _listCategoryToday(),
           ) : const SizedBox(),*/
-          (selectedTab == 0 || selectedTab == 1) ? Container(
+          /*(selectedTab == 0 || selectedTab == 1) ? Container(
             height: 1,
             width: size.width,
             decoration: const BoxDecoration(color: buttonColor),
-          ): const SizedBox(),
+          ): const SizedBox(),*/
           //Working List
-          Expanded(child: selectedTab == 2 ? _listSchedule() :
-          selectedTab == 0 ? _listJobToday() :
-          const CanlenderComponent(),),
+          Expanded(child: /*selectedTab == 2 ? _listSchedule() :
+          selectedTab == 0 ? _listJobToday() :*/
+           CanlenderComponent(staffID: widget.staffID!),),
         ]),
       ),
-    );
-  }
-
-  //All Of the Schedule that Staff done (History)
-  Widget _listSchedule(){
-    var size = MediaQuery.of(context).size;
-    return FutureBuilder<List<WorkingDate>>(
-      future: fetchSchedule(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Circular();
-        }
-        if (snapshot.hasData) {
-          List<WorkingDate> date = snapshot.data!;
-          if (snapshot.data! == null) {
-            return const Center(
-              child: Text(
-                'Không có kết quả để hiển thị',
-                style: TextStyle(color: Colors.black, fontSize: 16),
-              ),
-            );
-          } else {
-            //List ClipRREct -> show history when hit the container
-            //Need to Design better
-            int length = date.length;
-            return ListView.builder(
-              //padding: const EdgeInsets.symmetric(horizontal: 18),
-              //scrollDirection: Axis.horizontal,
-                controller: _scrollController,
-                shrinkWrap: true,
-                itemCount: date.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Card(
-                    child: ExpansionTile(
-                      collapsedTextColor: Colors.black,
-                      collapsedIconColor: Colors.black,
-                      iconColor: buttonColor,
-                      textColor: Colors.black,
-                      backgroundColor: Colors.white,
-                      title: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(formatDatenoTime(date[index].workingDate.toString()), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
-                          const SizedBox(height: 5,),
-                          Text(date[index].serviceName.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 5,),
-                          _contractFiled('Khách hàng',date[index].fullName.toString()),
-                          _contractFiled('Địa chỉ',date[index].address.toString()),
-                        ],
-                      ),
-                      children: [
-                        Column(
-                          children: [
-                            Container(
-                                margin: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-                                padding: const EdgeInsets.only(left: 10, right: 10),
-                              child: Row(
-                                children: [
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            width: size.width - 40,
-                                            height: 1,
-                                            decoration: const BoxDecoration(color: divince),
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          const Text('Thông tin dịch vụ' , style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: buttonColor)),
-                                          const SizedBox(
-                                            height: 5,
-                                          ),
-                                          _contractFiled('ID',date[index].id.toString()),
-                                          _contractFiled('Ngày làm việc',date[index].timeWorking.toString()),
-                                          _contractFiled('Chú ý',date[index].note.toString()),
-                                          _contractFiled(
-                                              date[index].serviceID.toString() == 'SE001' ? 'Chiều cao cây' :
-                                              date[index].serviceTypeID.toString() == 'SE002' ? 'Chiều cao cây' :'Kích thước vườn'
-                                              ,date[index].typeSize.toString()),
-                                          _contractFiled('Thời gian',date[index].packRange.toString() + ' ' + date[index].packRange.toString()),
-                                          const SizedBox(
-                                            height: 5,
-                                          ),
-                                          Container(
-                                            width: size.width - 40,
-                                            height: 1,
-                                            decoration: const BoxDecoration(color: divince),
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          const Text('Thông tin khách hàng' , style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: buttonColor)),
-                                          const SizedBox(
-                                            height: 5,
-                                          ),
-                                          _contractFiled('Khách hàng',date[index].fullName.toString()),
-                                          _contractFiled('địa chỉ',date[index].address.toString()),
-                                          _contractFiled('Điện thoại',date[index].phone.toString()),
-                                          _contractFiled('Email',date[index].email == null ? 'không có' : date[index].email.toString()),
-                                        ],
-                                      ),
-                                    ],
-                                  )
-                                ],
-                              )
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  );
-                }
-            );
-          }
-        }
-        return const Center(
-          child: Text('Error'),
-        );
-      },
     );
   }
 
@@ -326,15 +201,14 @@ class _SchedulePageState extends State<SchedulePage> {
     String weekday = getWeekday(now.weekday);
     String fweekday = now.year.toString() + '-' + now.month.toString().padLeft(2, '0') + '-' + now.day.toString().padLeft(2, '0');
     var size = MediaQuery.of(context).size;
-
-    return FutureBuilder<List<ContractDetail>>(
+    return FutureBuilder<List<WorkingInSchedule>>(
       future:fetchScheduleInWeek(fweekday,fweekday),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Circular();
         }
         if (snapshot.hasData) {
-          List <ContractDetail> cD = snapshot.data!;
+          List <WorkingInSchedule> cD = snapshot.data!;
           if (snapshot.data == null) {
             return const Center(
               child: Text(
@@ -350,16 +224,18 @@ class _SchedulePageState extends State<SchedulePage> {
                 shrinkWrap: true,
                 itemCount: cD.length,
                 itemBuilder: (BuildContext context, int index) {
-                  List days_list = (cD[index].timeWorking.toString().split(", "));
+                  List days_list = (cD[index].timeWorking.toString().split(" - "));
+                  print("cD[index].timeWorking");
+                  print(cD[index].timeWorking);
                   if(((selectedTabToday == 0 ) || (selectedTabToday == 1))) {
                   for(int i = 0; i < days_list.length; i++ ){
                     if (days_list[i] == weekday){
                       bool checkOk = false;
                            return GestureDetector(
                         onTap: () async{
-                          Contract contract = await fetchAContract(cD[index].showContractModel!.id);
+                          Contract contract = await fetchAContract(cD[index].id);
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ContractDetailPage(contract: contract ,contractID: contract.id),
+                        builder: (context) => ContractDetailPage(contractID: contract.id),
                       ));
                         },
                         child: Column(
@@ -376,7 +252,7 @@ class _SchedulePageState extends State<SchedulePage> {
                                         mainAxisAlignment: MainAxisAlignment.start,
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(cD[index].showContractModel!.title.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
+                                          //Text(cD[index].showContractModel!.title.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
                                           const SizedBox(
                                             height: 10,
                                           ),
@@ -393,12 +269,12 @@ class _SchedulePageState extends State<SchedulePage> {
                                                 height: 10,
                                               ),
                                               _contractFiled('Mã công việc', cD[index].id.toString()),
-                                              _contractFiled('Mã hợp đồng', cD[index].showContractModel!.id.toString()),
-                                              _contractFiled('Dịch vụ',cD[index].showServiceModel!.name.toString() + ' - ' + cD[index].showServiceTypeModel!.typeName.toString()),
+                                              //_contractFiled('Mã hợp đồng', cD[index].showContractModel!.id.toString()),
+                                             // _contractFiled('Dịch vụ',cD[index].showServiceModel!.name.toString() + ' - ' + cD[index].showServiceTypeModel!.typeName.toString()),
                                               _contractFiled('Lịch chăm sóc', cD[index].timeWorking.toString()),
-                                              _contractFiled('Khách hàng', cD[index].showContractModel!.fullName.toString()),
-                                              _contractFiled('Địa chỉ', cD[index].showContractModel!.address.toString()),
-                                              _contractFiled('Điện thoại', cD[index].showContractModel!.phone.toString()),
+                                             // _contractFiled('Khách hàng', cD[index].showContractModel!.fullName.toString()),
+                                             // _contractFiled('Địa chỉ', cD[index].showContractModel!.address.toString()),
+                                             // _contractFiled('Điện thoại', cD[index].showContractModel!.phone.toString()),
                                             ],
                                           ),
                                         ],
@@ -541,7 +417,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
   //List Working follow weekday
   List <String> dayOfWeek = [
-    ('Thứ 2'),('Thứ 3'),('Thứ 4'),('Thứ 5'),('Thứ 6'),('Thứ 7'),('Chủ Nhật')
+    ('Thứ 2'),('Thứ 3'),('Thứ 4'),('Thứ 5'),('Thứ 6'),('Thứ 7'),('Chủ nhật')
   ];
 
   //List weekday (get by DateTime.now)
@@ -559,8 +435,8 @@ class _SchedulePageState extends State<SchedulePage> {
         return 'Thứ 6';
       case 6:
         return 'Thứ 7';
-      case 7:
-        return 'Chủ Nhật';
+      case 0:
+        return 'Chủ nhật';
       default:
         return '';
     }

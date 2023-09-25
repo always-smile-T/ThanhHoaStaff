@@ -124,11 +124,11 @@ class _ServicePageState extends State<ServicePage> {
                 width: 130,
                 height: 145,
                 alignment: Alignment.center,
-                child: _serviceTab(listService[index], icons[index]));
+                child: _serviceTab(listService[index]));
           },
         ));
   }
-  Widget _serviceTab(Service? service, IconData icon) {
+  Widget _serviceTab(Service? service) {
     var size = MediaQuery.of(context).size;
     return GestureDetector(
       onTap: () {
@@ -159,7 +159,11 @@ class _ServicePageState extends State<ServicePage> {
                             border: Border.all(color: darkText),
                             borderRadius: BorderRadius.circular(50),
                             color: barColor),
-                        child: FaIcon(icon, size: 35, color: buttonColor)),
+                      child: CircleAvatar(
+                        radius: 45,
+                        backgroundImage: NetworkImage(service!.imgList!.first.url == null ? NoIMG : service!.imgList!.first.url.toString()),
+                      ),
+                    ),
                     const SizedBox(width: 20,),
                     AutoSizeText(
                       service!.name,
@@ -187,9 +191,4 @@ class _ServicePageState extends State<ServicePage> {
       ),
     );
   }
-  List<IconData> icons = [
-    FontAwesomeIcons.leaf,
-    FontAwesomeIcons.plantWilt,
-    FontAwesomeIcons.sunPlantWilt,
-  ];
 }

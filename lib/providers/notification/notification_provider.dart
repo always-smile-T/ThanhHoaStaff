@@ -45,7 +45,6 @@ Future readAllNoty() async {
   );
 
   if (response.statusCode == 200) {
-    print('ok');
   } else {
     throw Exception('Failed to fetch contract details');
   }

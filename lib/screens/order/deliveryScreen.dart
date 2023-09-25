@@ -3,15 +3,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import '../../components/appBar.dart';
 import '../../components/note.dart';
 import '../../constants/constants.dart';
 import '../../models/order/order.dart';
+import '../../models/order_detail/order_detail.dart';
 
 class DeliveryScreen extends StatefulWidget {
-  OrderObject order;
-  DeliveryScreen({super.key, required this.order});
+  OrderObject? order;
+  List <OrderDetailbyID>? orderbyID;
+  final whereCall;
+  DeliveryScreen({super.key, this.order, this.orderbyID,required this.whereCall});
 
   @override
   State<DeliveryScreen> createState() => _DeliveryScreenState();
@@ -26,7 +30,6 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    var order = widget.order;
 
     return Scaffold(
       backgroundColor: background,
@@ -48,7 +51,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
           const SizedBox(
             height: 10,
           ),
-          _columnTimeLine(order.progressStatus, order),
+          widget.whereCall == 1 ? _columnTimeLine(widget.order!.progressStatus, widget.order!) : _columnTimeLine(widget.orderbyID![0].showOrderModel!.progressStatus!, null) ,
           Container(
             height: 10,
             decoration: const BoxDecoration(color: divince),
@@ -59,7 +62,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  Widget _timeLineDone(OrderObject order, String date, String title,
+  Widget _timeLineDone(String date, String title,
       String status, Color? colors) {
     var size = MediaQuery.of(context).size;
     return Container(
@@ -116,7 +119,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  Widget _timeLine(OrderObject order, String title, String status) {
+  Widget _timeLine(String title, String status) {
     var size = MediaQuery.of(context).size;
     return Container(
       padding: const EdgeInsets.all(8.0),
@@ -169,26 +172,25 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
     );
   }
 
-  Widget _columnTimeLine(String status, OrderObject order) {
+  Widget _columnTimeLine(String status, OrderObject? order) {
     switch (status) {
       case 'WAITING':
         return Column(
           children: [
             //xác nhận
             _timeLineDone(
-                order,
-                getDate(order.createdDate),
+                widget.whereCall == 1 ? getDate(order!.createdDate) : getDate(widget.orderbyID![0].showOrderModel!.createdDate!),
                 'Hoàn thành đặt mua đơn hàng',
-                convertStatus(order.progressStatus),
+                convertStatus(widget.whereCall == 1 ? order!.progressStatus : widget.orderbyID![0].showOrderModel!.progressStatus),
                 priceColor),
             //đã xác nhận
-            _timeLine(order, 'Hoàn thành xác nhận đơn hàng', 'Chờ xác nhận'),
+            _timeLine('Hoàn thành xác nhận đơn hàng', 'Chờ xác nhận'),
             //đóng gói
-            _timeLine(order, 'Hoàn thành đóng gói', 'Chờ đóng gói'),
+            _timeLine('Hoàn thành đóng gói', 'Chờ đóng gói'),
             //vận chuyễn
-            _timeLine(order, 'Đăng vận chuyễn', 'Nhân viên: _ _ _  _ _ _'),
+            _timeLine('Đăng vận chuyễn', 'Nhân viên: _ _ _  _ _ _'),
             //hoàn thành
-            _timeLine(order, 'Đã nhận', ''),
+            _timeLine('Đã nhận', ''),
           ],
         );
 
@@ -196,73 +198,73 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         return Column(
           children: [
             //xác nhận
-            _timeLineDone(order, getDate(order.createdDate),
+            _timeLineDone(widget.whereCall == 1 ? getDate(order!.createdDate) : getDate(widget.orderbyID![0].showOrderModel!.createdDate!),
                 'Hoàn thành đặt mua đơn hàng', 'Thành công', buttonColor),
             //đã xác nhận
-            _timeLineDone(order, getDate(order.approveDate),
+            _timeLineDone(widget.whereCall == 1 ? getDate(order!.approveDate) : getDate(widget.orderbyID![0].showOrderModel!.approveDate!),
                 'Hoàn thành xác nhận đơn hàng', 'Đã xác nhận', buttonColor),
             //đóng gói
-            _timeLine(order, 'Hoàn thành đóng gói', 'Chờ đóng gói'),
+            _timeLine('Hoàn thành đóng gói', 'Chờ đóng gói'),
             //vận chuyễn
-            _timeLine(order, 'Đăng vận chuyễn', 'Nhân viên: _ _ _  _ _ _'),
+            _timeLine('Đăng vận chuyễn', 'Nhân viên: _ _ _  _ _ _'),
             //hoàn thành
-            _timeLine(order, 'Đã nhận', ''),
+            _timeLine('Đã nhận', ''),
           ],
         );
       case 'PACKAGING':
         return Column(
           children: [
             //xác nhận
-            _timeLineDone(order, getDate(order.createdDate),
+            _timeLineDone(widget.whereCall == 1 ?  getDate(order!.createdDate) : getDate(widget.orderbyID![0].showOrderModel!.createdDate!),
                 'Hoàn thành đặt mua đơn hàng', 'Thành công', buttonColor),
             //đã xác nhận
-            _timeLineDone(order, getDate(order.approveDate),
+            _timeLineDone(widget.whereCall == 1 ?  getDate(order!.approveDate) : getDate(widget.orderbyID![0].showOrderModel!.approveDate!),
                 'Hoàn thành xác nhận đơn hàng', 'Đã xác nhận', buttonColor),
             //đóng gói
-            _timeLineDone(order, getDate(order.packageDate), 'Đang đóng gói',
+            _timeLineDone(widget.whereCall == 1 ?  getDate(order!.packageDate): getDate(widget.orderbyID![0].showOrderModel!.packageDate!), 'Đang đóng gói',
                 'Chờ vận chuyễn', buttonColor),
             //vận chuyễn
-            _timeLine(order, 'Đăng vận chuyễn', 'Nhân viên: _ _ _  _ _ _'),
+            _timeLine('Đăng vận chuyễn', 'Nhân viên: _ _ _  _ _ _'),
             //hoàn thành
-            _timeLine(order, 'Đã nhận', ''),
+            _timeLine('Đã nhận', ''),
           ],
         );
       case 'DELIVERING':
         return Column(
           children: [
             //xác nhận
-            _timeLineDone(order, getDate(order.createdDate),
+            _timeLineDone(widget.whereCall == 1 ? getDate(order!.createdDate) : getDate(widget.orderbyID![0].showOrderModel!.createdDate!),
                 'Hoàn thành đặt mua đơn hàng', 'Thành công', buttonColor),
             //đã xác nhận
-            _timeLineDone(order, getDate(order.approveDate),
+            _timeLineDone(widget.whereCall == 1 ? getDate(order!.approveDate) : getDate(widget.orderbyID![0].showOrderModel!.approveDate!),
                 'Hoàn thành xác nhận đơn hàng', 'Đã xác nhận', buttonColor),
             //đóng gói
-            _timeLineDone(order, getDate(order.packageDate),
+            _timeLineDone(widget.whereCall == 1 ?  getDate(order!.packageDate): getDate(widget.orderbyID![0].showOrderModel!.packageDate!),
                 'Hoàn thành đóng gói', 'Đã đóng gói', buttonColor),
             //vận chuyễn
-            _timeLineDone(order, getDate(order.packageDate), 'Đang vận chuyển',
-                'Nhân Viên: ${order.showStaffModel!.fullName}', buttonColor),
+            _timeLineDone(widget.whereCall == 1 ?  getDate(order!.packageDate): getDate(widget.orderbyID![0].showOrderModel!.packageDate!), 'Đang vận chuyển',
+                widget.whereCall == 1 ? 'Nhân Viên: ${order!.showStaffModel!.fullName}' : 'Nhân Viên: ${widget.orderbyID![0].showStaffModel!.fullName}', buttonColor),
             //hoàn thành
-            _timeLine(order, 'Đã nhận', ''),
+            _timeLine('Đã nhận', ''),
           ],
         );
       case 'RECEIVED':
         return Column(
           children: [
             //xác nhận
-            _timeLineDone(order, getDate(order.createdDate),
+            _timeLineDone(widget.whereCall == 1 ?  getDate(order!.createdDate) : getDate(widget.orderbyID![0].showOrderModel!.createdDate!),
                 'Hoàn thành đặt mua đơn hàng', 'Thành công', buttonColor),
             //đã xác nhận
-            _timeLineDone(order, getDate(order.approveDate),
+            _timeLineDone( widget.whereCall == 1 ? getDate(order!.approveDate): getDate(widget.orderbyID![0].showOrderModel!.approveDate!),
                 'Hoàn thành xác nhận đơn hàng', 'Đã xác nhận', buttonColor),
             //đóng gói
-            _timeLineDone(order, getDate(order.packageDate),
+            _timeLineDone(widget.whereCall == 1 ?  getDate(order!.packageDate): getDate(widget.orderbyID![0].showOrderModel!.packageDate!),
                 'Hoàn thành đóng gói', 'Chờ vận chuyễn', buttonColor),
             //vận chuyễn
-            _timeLineDone(order, getDate(order.deliveryDate), 'Đang vận chuyển',
-                'Nhân Viên: ${order.showStaffModel!.fullName}', buttonColor),
+            _timeLineDone( widget.whereCall == 1 ? getDate(order!.deliveryDate): getDate(widget.orderbyID![0].showOrderModel!.deliveryDate!), 'Đang vận chuyển',
+                widget.whereCall == 1 ?  'Nhân Viên: ${order!.showStaffModel!.fullName}': 'Nhân Viên: ${widget.orderbyID![0].showStaffModel!.fullName}', buttonColor),
             //hoàn thành
-            _timeLineDone(order, getDate(order.receivedDate), 'Hoàn thành', '',
+            _timeLineDone(widget.whereCall == 1 ?  getDate(order!.receivedDate): getDate(widget.orderbyID![0].showOrderModel!.receivedDate!), 'Hoàn thành', '',
                 buttonColor),
           ],
         );
@@ -270,79 +272,79 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
         return Column(
           children: [
             //xác nhận
-            _timeLineDone(order, getDate(order.rejectDate),
-                'Đơn hàng đã từ chối', 'Lý do: ${order.reason}', priceColor),
+            _timeLineDone( widget.whereCall == 1 ? getDate(order!.rejectDate) : getDate(widget.orderbyID![0].showOrderModel!.receivedDate!),
+                'Đơn hàng đã từ chối', widget.whereCall == 1 ?  'Lý do: ${order!.reason}' : 'Lý do: ${widget.orderbyID![0].showOrderModel!.reason}' , priceColor),
             //đã xác nhận
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //đóng gói
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //vận chuyễn
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //hoàn thành
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
           ],
         );
       case 'STAFFCANCELED':
         return Column(
           children: [
             //xác nhận
-            _timeLineDone(order, getDate(order.rejectDate),
-                'Đơn hàng đã từ chối', 'Lý do: ${order.reason}', priceColor),
+            _timeLineDone( widget.whereCall == 1 ? getDate(order!.rejectDate) : getDate(widget.orderbyID![0].showOrderModel!.receivedDate!),
+                'Đơn hàng đã từ chối', widget.whereCall == 1 ?  'Lý do: ${order!.reason}' : 'Lý do: ${widget.orderbyID![0].showOrderModel!.reason}' , priceColor),
             //đã xác nhận
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //đóng gói
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //vận chuyễn
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //hoàn thành
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
           ],
         );
       case 'CUSTOMERCANCELED':
         return Column(
           children: [
             //xác nhận
-            _timeLineDone(order, getDate(order.rejectDate), 'Đơn hàng đã hủy',
-                'Lý do: ${order.reason}', priceColor),
+            _timeLineDone(widget.whereCall == 1 ? getDate(order!.rejectDate) : getDate(widget.orderbyID![0].showOrderModel!.receivedDate!), 'Đơn hàng đã hủy',
+                widget.whereCall == 1 ?  'Lý do: ${order!.reason}' :  'Lý do: ${widget.orderbyID![0].showOrderModel!.reason}' , priceColor),
             //đã xác nhận
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //đóng gói
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //vận chuyễn
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //hoàn thành
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
           ],
         );
       case 'STAFFCANCELED':
         return Column(
           children: [
             //xác nhận
-            _timeLineDone(order, getDate(order.rejectDate),
+            _timeLineDone(widget.whereCall == 1 ? getDate(order!.rejectDate) : getDate(widget.orderbyID![0].showOrderModel!.receivedDate!),
                 'Đơn hàng đã từ chối', 'Đặt hàng thất bại', priceColor),
             //đã xác nhận
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //đóng gói
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //vận chuyễn
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //hoàn thành
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
           ],
         );
       default:
         return Column(
           children: [
             //xác nhận
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine( '_ _ _ _ _ _ _ _', '_ _ _ _'),
             //đã xác nhận
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //đóng gói
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //vận chuyễn
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
             //hoàn thành
-            _timeLine(order, '_ _ _ _ _ _ _ _', '_ _ _ _'),
+            _timeLine('_ _ _ _ _ _ _ _', '_ _ _ _'),
           ],
         );
     }

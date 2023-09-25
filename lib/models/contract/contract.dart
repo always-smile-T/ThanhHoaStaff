@@ -12,21 +12,22 @@ class Contract {
   String? paymentMethod;
   String? reason;
   String? createdDate;
+  String? confirmedDate;
+  String? signedDate;
   String? startedDate;
   String? endedDate;
+  String? expectedEndedDate;
   String? approvedDate;
   String? rejectedDate;
-  double? deposit;
   double? total;
   bool? isFeedback;
   bool? isSigned;
   String? status;
+  bool? isPaid;
   List<ImgList>? imgList;
   ShowStaffModel? showStaffModel;
   ShowCustomerModel? showCustomerModel;
   ShowStoreModel? showStoreModel;
-  ShowPaymentTypeModel? showPaymentTypeModel;
-  late final totalPage;
 
   Contract(
       {this.id,
@@ -38,21 +39,22 @@ class Contract {
         this.paymentMethod,
         this.reason,
         this.createdDate,
+        this.confirmedDate,
+        this.signedDate,
         this.startedDate,
         this.endedDate,
+        this.expectedEndedDate,
         this.approvedDate,
         this.rejectedDate,
-        this.deposit,
         this.total,
         this.isFeedback,
         this.isSigned,
         this.status,
+        this.isPaid,
         this.imgList,
         this.showStaffModel,
         this.showCustomerModel,
-        this.showStoreModel,
-        this.showPaymentTypeModel,
-        this.totalPage
+        this.showStoreModel
       });
 
   factory Contract.fromJson(Map<String, dynamic> json) => _$ContractFromJson(json);

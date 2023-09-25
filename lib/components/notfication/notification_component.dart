@@ -7,9 +7,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../../constants/constants.dart';
 import '../../models/contract/contract.dart';
 import '../../models/notification/notification.dart';
+import '../../models/order/order.dart';
 import '../../providers/contract/contract_provider.dart';
-import '../../providers/notification/notification_provider.dart';
+import '../../providers/notification/notification_Provider.dart';
 import '../../screens/contract/contractPageDetail.dart';
+import '../../screens/order/orderDetail.dart';
 import '../../utils/format/date.dart';
 
 class NotificationComponent extends StatefulWidget {
@@ -23,17 +25,18 @@ class NotificationComponent extends StatefulWidget {
 class _NotificationComponentState extends State<NotificationComponent> {
   String? location = '';
   String? locationID = '';
+  OrderObject? order;
 
   @override
   Widget build(BuildContext context) {
     Noty noty = widget.noty;
     return GestureDetector(
       onTap: () async{
+        setState((){
+          readOneNoty(noty.id);
+        });
         location = getLocation(noty.link!.toString());
         locationID = getLocationID(noty.link!.toString());
-        if(noty.isRead == false){
-          readOneNoty(noty.id);
-        }
         if(location == 'CONTRACT'){
           Contract contract = await fetchAContract(locationID);
           Navigator.of(context).push(MaterialPageRoute(
@@ -41,20 +44,11 @@ class _NotificationComponentState extends State<NotificationComponent> {
           ));
         }
         else if(location  == 'ORDER'){
-          Fluttertoast.showToast(
-              msg: "Hiện bạn không thể xem thông báo này",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: buttonColor,
-              textColor: Colors.white,
-              fontSize: 16.0);
-          /*OrderObject order = (await fetchAContract(locationID)) as OrderObject;
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => OrderDetailScreen(order: order),
-                                ));*/
+                                  builder: (context) => OrderDetailScreen( orderID: locationID, whereCall: 2,),
+                                ));
         } if (location == null) {
           Fluttertoast.showToast(
               msg: "Hiện bạn không thể xem thông báo này",
@@ -101,7 +95,7 @@ class _NotificationComponentState extends State<NotificationComponent> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(noty.title.toString(), style: TextStyle(fontWeight: FontWeight.bold),),
+                  Text(noty.title.toString(), style: const TextStyle(fontWeight: FontWeight.bold),),
                   const SizedBox(height: 10,),
                   Text(noty.description.toString().length >= 50 ? '${noty.description.toString().substring(0,47)}...': "${noty.description}", style: TextStyle(fontSize: 12),),
                 ],

@@ -9,12 +9,17 @@ class ContractDetail {
   String? note;
   String? startDate;
   String? endDate;
+  String? expectedEndDate;
+  String? plantStatus;
+  String? plantIMG;
+  double? price;
   double? totalPrice;
   ShowContractModel? showContractModel;
   ShowServiceTypeModel? showServiceTypeModel;
   ShowServiceModel? showServiceModel;
   ShowServicePackModel? showServicePackModel;
-  List<ImgList>? workingDateList;
+  List<WorkingDateList>? workingDateList;
+  List<PlantStatusIMGModelList>? plantStatusIMGModelList;
   //late final totalPage;
 
   ContractDetail(
@@ -23,13 +28,16 @@ class ContractDetail {
         this.note,
         this.startDate,
         this.endDate,
+        this.expectedEndDate,
+        this.plantStatus,
+        this.plantIMG,
+        this.price,
         this.totalPrice,
         this.showContractModel,
         this.showServiceTypeModel,
         this.showServiceModel,
         this.showServicePackModel,
         this.workingDateList,
-       // this.totalPage
       });
 
   factory ContractDetail.fromJson(Map<String, dynamic> json) => _$ContractDetailFromJson(json);
@@ -49,11 +57,13 @@ class ShowContractModel {
   String? paymentMethod;
   String? reason;
   String? createdDate;
+  String? confirmedDate;
+  String? signedDate;
   String? startedDate;
   String? endedDate;
+  String? expectedEndedDate;
   String? approvedDate;
   String? rejectedDate;
-  double? deposit;
   double? total;
   bool? isFeedback;
   bool? isSigned;
@@ -63,7 +73,6 @@ class ShowContractModel {
   ShowStaffModel? showStaffModel;
   ShowCustomerModel? showCustomerModel;
   ShowStoreModel? showStoreModel;
-  ShowPaymentTypeModel? showPaymentTypeModel;
   //late final totalPage;
 
   ShowContractModel(
@@ -76,11 +85,13 @@ class ShowContractModel {
         this.paymentMethod,
         this.reason,
         this.createdDate,
+        this.confirmedDate,
+        this.signedDate,
         this.startedDate,
         this.endedDate,
+        this.expectedEndedDate,
         this.approvedDate,
         this.rejectedDate,
-        this.deposit,
         this.total,
         this.isFeedback,
         this.isSigned,
@@ -90,7 +101,6 @@ class ShowContractModel {
         this.showStaffModel,
         this.showCustomerModel,
         this.showStoreModel,
-        this.showPaymentTypeModel,
         //this.totalPage
       });
 
@@ -173,18 +183,6 @@ class ShowStoreModel {
   Map<String, dynamic> toJson() => _$ShowStoreModelToJson(this);
 }
 @JsonSerializable()
-class ShowPaymentTypeModel {
-  String? id;
-  String? name;
-  int? value;
-
-  ShowPaymentTypeModel({this.id, this.name, this.value});
-
-  factory ShowPaymentTypeModel.fromJson(Map<String, dynamic> json) => _$ShowPaymentTypeModelFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ShowPaymentTypeModelToJson(this);
-}
-@JsonSerializable()
 class ShowServiceTypeModel {
   String? id;
   String? typeName;
@@ -244,4 +242,94 @@ class ShowServicePackModel {
   factory ShowServicePackModel.fromJson(Map<String, dynamic> json) => _$ShowServicePackModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$ShowServicePackModelToJson(this);
+}
+@JsonSerializable()
+class WorkingDateList {
+  String? id;
+  String? workingDate;
+  String? startWorking;
+  String? endWorking;
+  String? startWorkingIMG;
+  String? endWorkingIMG;
+  String? status;
+  String? contractID;
+  String? title;
+  String? fullName;
+  String? address;
+  String? phone;
+  String? email;
+  String? contractDetailID;
+  String? timeWorking;
+  String? note;
+  String? startDate;
+  String? endDate;
+  String? expectedEndDate;
+  double? totalPrice;
+  String? plantStatus;
+  String? plantIMG;
+  String? serviceID;
+  String? serviceName;
+  String? serviceTypeID;
+  String? typeName;
+  int? typePercentage;
+  String? typeSize;
+  String? typeUnit;
+  String? typeApplyDate;
+  String? servicePackID;
+  String? packRange;
+  String? packUnit;
+  int? packPercentage;
+  String? packApplyDate;
+  ShowStaffModel? showStaffModel;
+
+  WorkingDateList({this.id,
+    this.workingDate,
+    this.startWorking,
+    this.endWorking,
+    this.startWorkingIMG,
+    this.endWorkingIMG,
+    this.status,
+    this.contractID,
+    this.title,
+    this.fullName,
+    this.address,
+    this.phone,
+    this.email,
+    this.contractDetailID,
+    this.timeWorking,
+    this.note,
+    this.startDate,
+    this.endDate,
+    this.expectedEndDate,
+    this.totalPrice,
+    this.plantStatus,
+    this.plantIMG,
+    this.serviceID,
+    this.serviceName,
+    this.serviceTypeID,
+    this.typeName,
+    this.typePercentage,
+    this.typeSize,
+    this.typeUnit,
+    this.typeApplyDate,
+    this.servicePackID,
+    this.packRange,
+    this.packUnit,
+    this.packPercentage,
+    this.packApplyDate,
+    this.showStaffModel});
+  factory WorkingDateList.fromJson(Map<String, dynamic> json) => _$WorkingDateListFromJson(json);
+
+  Map<String, dynamic> toJson() => _$WorkingDateListToJson(this);
+}
+
+@JsonSerializable()
+class PlantStatusIMGModelList {
+  String? id;
+  String? imgUrl;
+
+  PlantStatusIMGModelList({this.id, this.imgUrl});
+  factory PlantStatusIMGModelList.fromJson(Map<String, dynamic> json) => _$PlantStatusIMGModelListFromJson(json);
+
+  Map<String, dynamic> toJson() => _$PlantStatusIMGModelListToJson(this);
 }

@@ -32,6 +32,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../utils/helper/shared_prefs.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'notification.dart';
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async{
   await Firebase.initializeApp();
 }
@@ -46,55 +48,24 @@ List<Bonsai> Listincart = [];
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   sharedPreferences = await SharedPreferences.getInstance();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await setupFlutterNotifications();
 
+  FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {
+    AuthenticationProvider().setfcmToken(fcmToken);
+  }).onError((err) {
+    // Error getting token.
+  });
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  FirebaseMessaging.onMessage.listen(showFlutterNotification);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
   String? token = await messaging.getToken(
     vapidKey: "BGpdLRs......",
   );
-  print('tokenNoti: ' + token.toString());
-  Future<void> _showNotification(RemoteNotification notification) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-
-    const NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.show(
-      0, // ID của thông báo
-      notification.title,
-      notification.body,
-      platformChannelSpecifics,
-    );
-  }
-
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-    print('message data: ' + message.data.toString());
-
-    if (message.notification != null) {
-      print('notifi: ' + message.notification.toString());
-      await _showNotification(message.notification!);
-    }
-  });
 
   initializeDateFormatting('vi_VN');
   runApp( MyApp(notiToken: token.toString()));
@@ -158,4 +129,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

@@ -130,16 +130,45 @@ class OrderProvider extends ChangeNotifier {
   }
 
   Future<bool> getDistancePrice() async {
+    print("8");
     bool result = false;
     var header = getheader(getTokenAuthenFromSharedPrefs());
     try {
       final res =
       await http.get(Uri.parse(mainURL + distanceURL), headers: header);
+      print("res.statusCode: " + res.statusCode.toString());
       if (res.statusCode == 200) {
+        print(" emty? " + res.body.toString());
         if (res.body.isNotEmpty) {
           var jsondata = json.decode(res.body);
           _distancePrice = Distance.fromJson(jsondata);
           result = true;
+          notifyListeners();
+        }
+        print(" emty");
+      }
+      notifyListeners();
+    } on HttpException catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+      }
+    }
+    print(result.toString());
+    return result;
+  }
+
+  Future<bool> createOrder(order) async {
+    bool result = false;
+    var body = json.encode(order);
+    var header = getheader(getTokenAuthenFromSharedPrefs());
+    try {
+      final res = await http.post(Uri.parse(mainURL + orderURL),
+          headers: header, body: body);
+      print("status: " + res.statusCode.toString());
+      if (res.statusCode == 200) {
+        if (res.body.isNotEmpty) {
+          result = true;
+
           notifyListeners();
         }
       }
@@ -153,17 +182,16 @@ class OrderProvider extends ChangeNotifier {
     return result;
   }
 
-  Future<bool> createOrder(order) async {
-    bool result = false;
-    var body = json.encode(order);
+  Future<String> payment(Map<String, dynamic> map) async {
+    String result = '';
     var header = getheader(getTokenAuthenFromSharedPrefs());
+    var body = json.encode(map);
     try {
-      final res = await http.post(Uri.parse(mainURL + orderURL),
-          headers: header, body: body);
+      final res = await http.post(Uri.parse('$mainURL$paymentURL'),
+          body: body, headers: header);
       if (res.statusCode == 200) {
         if (res.body.isNotEmpty) {
-          result = true;
-
+          result = res.body;
           notifyListeners();
         }
       }
@@ -347,6 +375,7 @@ Future<void> ChangeStatusOrder(orderID, status, img) async {
     Uri.parse(url),
     headers: header,
   );
+  print("response.statusCode: " + response.statusCode.toString());
 
   if (response.statusCode == 200) {
 

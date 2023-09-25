@@ -48,5 +48,3 @@ class CategoryProvider extends ChangeNotifier {
     return result;
   }
 }
-
-

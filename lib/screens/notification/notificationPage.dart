@@ -1,22 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
-import 'package:thanhhoa_garden_staff_app/utils/format/date.dart';
-import '../../blocs/order/orderBloc.dart';
-import '../../blocs/order/orderEvent.dart';
-import '../../blocs/order/orderState.dart';
 import '../../components/appBar.dart';
 import '../../components/circular.dart';
 import '../../components/notfication/notification_component.dart';
 import '../../components/notfication/read_all_component.dart';
 import '../../constants/constants.dart';
-import '../../models/contract/contract.dart';
 import '../../models/notification/notification.dart';
-import '../../models/order/order.dart';
-import '../../providers/contract/contract_provider.dart';
 import '../../providers/notification/notification_provider.dart';
-import '../contract/contractPageDetail.dart';
-import '../order/orderDetail.dart';
 
 
 
@@ -30,35 +19,12 @@ class NotificationPage extends StatefulWidget {
 final ScrollController _scrollController = ScrollController();
 
 class _NotificationPageState extends State<NotificationPage> {
- /* late OrderBloc orderBloc;
-  late Stream<OrderState> orderStream;
-  late OrderObject order;*/
 
 
   void initState() {
-    /*orderBloc = Provider.of<OrderBloc>(context, listen: true);
-    orderStream = orderBloc.authStateStream;*/
     // TODO: implement initState
     super.initState();
   }
-
-/*  _getOrder(
-      String id,
-      ) {
-    orderBloc.send(GetAnOrderEvent(
-      order: order,
-      id: id,
-    ));
-  }*/
-/*
-  @override
-  void dispose() {
-    orderBloc.dispose();
-    // TODO: implement dispose
-    super.dispose();
-  }*/
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +91,13 @@ class _NotificationPageState extends State<NotificationPage> {
     Positioned(
         right: MediaQuery.of(context).size.width / 2 - 70,
       bottom: 10,
-        child: ReadALlComponent(title: 'đánh dâu đã đọc'))
+        child: GestureDetector(
+          onTap: (){
+            readAllNoty();
+            setState(() {
+            });
+          },
+            child: const ReadALlComponent(title: 'đánh dấu đã đọc')))
       ],
     );
   }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:thanhhoa_garden_staff_app/models/workingDate/working_date.dart';
 import '../../models/contract/contractDetail/contract_detail.dart';
+import '../../models/workingDate/scheduleToday/schedule_today.dart';
 import '../../utils/connection/utilsConnection.dart';
 import '../../utils/helper/shared_prefs.dart';
 import '../../constants/constants.dart';
@@ -29,19 +30,39 @@ Future<List<WorkingDate>> fetchSchedule() async {
     throw Exception('Failed to fetch contract details');
   }
 }
-Future<List<ContractDetail>> fetchScheduleInWeek(from, to) async {
+Future<List<WorkingInSchedule>> fetchScheduleInWeek(from, to) async {
   var header = getheader(getTokenAuthenFromSharedPrefs());
   var token = getTokenAuthenFromSharedPrefs();
-  String url = '$mainURL${getScheduleInWeekURL}from=$from&to=$to';
-
+  String url = '$mainURL${getWorkingURL}from=$from&to=$to';
   final response = await http.get(
     Uri.parse(url),
     headers: header,
   );
   final decoded = utf8.decode(response.bodyBytes);
   if (response.statusCode == 200) {
-    List<ContractDetail> contractDetails = ((jsonDecode(decoded)) as List)
-        .map((json) => ContractDetail.fromJson(json as Map<String, dynamic>))
+    List<WorkingInSchedule> contractDetails = ((jsonDecode(decoded)) as List)
+        .map((json) => WorkingInSchedule.fromJson(json as Map<String, dynamic>))
+        .toList();
+    print("contractDetails nè: ");
+    print(contractDetails.first);
+    return contractDetails;
+  } else {
+    throw Exception('Failed to fetch contract details');
+  }
+}
+
+Future<List<WorkingInSchedule>> fetchScheduleContractDetail(contractDetailD) async {
+  var header = getheader(getTokenAuthenFromSharedPrefs());
+  var token = getTokenAuthenFromSharedPrefs();
+  String url = '$mainURL${getWorkingDetailURL}contractDetailID=$contractDetailD&pageNo=0&pageSize=250&sortBy=ID&sortAsc=true';
+  final response = await http.get(
+    Uri.parse(url),
+    headers: header,
+  );
+  final decoded = utf8.decode(response.bodyBytes);
+  if (response.statusCode == 200) {
+    List<WorkingInSchedule> contractDetails = ((jsonDecode(decoded)) as List)
+        .map((json) => WorkingInSchedule.fromJson(json as Map<String, dynamic>))
         .toList();
     return contractDetails;
   } else {
@@ -80,6 +101,7 @@ Future ConfirmWorkingDate (contractDetailID) async {
   }
 }
 
+// tam k dung
 Future <bool?> checkWorkingDate(contractDetailID, date) async {
   var header = getheader(getTokenAuthenFromSharedPrefs());
   String url = mainURL + '/workingDate/getByWorkingDate?contractDetailID=$contractDetailID&date=$date';
@@ -95,6 +117,67 @@ Future <bool?> checkWorkingDate(contractDetailID, date) async {
     }
     print('khong co ngay nay');
     return false;
+  } else {
+    Fluttertoast.showToast(
+        msg: "Đã Có Lỗi Xẩy Ra",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: ErorText,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
+}
+//check start working
+
+Future checkStartWorking(workingDateID, startWorkingIMG, staffID) async {
+  var header = getheader(getTokenAuthenFromSharedPrefs());
+  String url = '$mainURL/workingDate/v2/addStartWorkingDate?workingDateID=$workingDateID&startWorkingIMG=$startWorkingIMG&staffID=$staffID';
+  final response = await http.post(
+    Uri.parse(url),
+    headers: header,
+  );
+
+  if (response.statusCode == 200) {
+    Fluttertoast.showToast(
+        msg: "Bắt đầu làm việc",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: buttonColor,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  } else {
+    Fluttertoast.showToast(
+        msg: "Đã Có Lỗi Xẩy Ra",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: ErorText,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
+}
+
+//check End working
+
+Future checkEndWorking(workingDateID, endWorkingIMG, staffID) async {
+  var header = getheader(getTokenAuthenFromSharedPrefs());
+  String url = '$mainURL/workingDate/v2/addEndWorkingDate?workingDateID=$workingDateID&endWorkingIMG=$endWorkingIMG&staffID=$staffID';
+  final response = await http.post(
+    Uri.parse(url),
+    headers: header,
+  );
+
+  if (response.statusCode == 200) {
+    Fluttertoast.showToast(
+        msg: "Kết thúc công việc",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: buttonColor,
+        textColor: Colors.white,
+        fontSize: 16.0);
   } else {
     Fluttertoast.showToast(
         msg: "Đã Có Lỗi Xẩy Ra",

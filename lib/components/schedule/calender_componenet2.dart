@@ -1,13 +1,24 @@
+
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:overlay_loading_progress/overlay_loading_progress.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:thanhhoa_garden_staff_app/components/button/dialog_button.dart';
 import 'package:thanhhoa_garden_staff_app/constants/constants.dart';
-import '../../models/contract/contractDetail/contract_detail.dart';
+import '../../models/contract/contract.dart';
+import '../../models/workingDate/scheduleToday/schedule_today.dart';
+import '../../providers/contract/contract_provider.dart';
+import '../../providers/img_provider.dart';
 import '../../providers/schedule/schedule_provider.dart';
+import '../../screens/contract/contractPageDetail.dart';
 import '../circular.dart';
 
 
 class CanlenderComponent extends StatefulWidget {
-  const CanlenderComponent({Key? key}) : super(key: key);
+  const CanlenderComponent({Key? key, required this.staffID}) : super(key: key);
+  final staffID;
 
 
   @override
@@ -18,7 +29,23 @@ class CanlenderComponent extends StatefulWidget {
 DateTime today = DateTime.now();
 bool isSelected = false;
 
+
 class _CanlenderComponentState extends State<CanlenderComponent> {
+
+
+  String day = DateTime.utc(DateTime.now().year, DateTime.now().month, DateTime.now().day).toString().substring(0,10);
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    getScheduleToday();
+    super.initState();
+  }
+
+  getScheduleToday (){
+    fetchScheduleInWeek(day,day);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -44,16 +71,16 @@ class _CanlenderComponentState extends State<CanlenderComponent> {
             height: 6,
             decoration: const BoxDecoration(color: divince),
           ),
-          isSelected ? SizedBox(
+         /* isSelected ?*/ SizedBox(
             height: 600,
-            child: FutureBuilder<List<ContractDetail>>(
+            child: FutureBuilder<List<WorkingInSchedule>>(
               future: fetchScheduleInWeek(today.toString().split(" ")[0],today.toString().split(" ")[0]),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Circular();
                 }
                 if (snapshot.hasData) {
-                  List <ContractDetail> schedule = snapshot.data!;
+                  List <WorkingInSchedule> schedule = snapshot.data!;
                   if (snapshot.data == null) {
                     return const Center(
                       child: Text(
@@ -62,57 +89,93 @@ class _CanlenderComponentState extends State<CanlenderComponent> {
                       ),
                     );
                   } else {
-                    return ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        padding: EdgeInsets.zero,
-                        itemBuilder: (context, index) {
-                          List daysList = (schedule[index].timeWorking.toString().split(", "));
-                          for(int i = 0; i < daysList.length; i++ ){
-                            if(daysList[i] == getWeekday(today.weekday)){
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Card(
-                                    child: Container(
-                                      padding: const EdgeInsets.only(top: 5, left: 10, right: 10),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
+                    return Container(
+                      child: ListView.builder(
+                          //scrollDirection: Axis.vertical,
+                          padding: EdgeInsets.zero,
+                          itemBuilder: (context, index) {
+                            List daysList = (schedule[index].timeWorking.toString().split(" - "));
+                            for(int i = 0; i < daysList.length; i++ ){
+                              if(daysList[i] == getWeekday(today.weekday)){
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    GestureDetector(
+                                      child: Card(
+                                        child: Container(
+                                          padding: const EdgeInsets.only(top: 5, left: 10, right: 10),
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text('${schedule[index].showContractModel!.title} - ', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),),
-                                              Text(schedule[index].showServiceModel!.name.toString(), style: const TextStyle(fontSize: 12),),
+                                              Row(
+                                                children: [
+                                                  Text('${schedule[index].title} - ', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),),
+                                                  Text(schedule[index].serviceName.toString(), style: const TextStyle(fontSize: 12),),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 5,),
+                                              _contractFiled2('Khách hàng', schedule[index].fullName.toString()),
+                                              _contractFiled2('Địa chỉ', schedule[index].address.toString()),
+                                              _contractFiled2('Điện thoại', schedule[index].phone.toString()),
+                                              const SizedBox(height: 5,),
+                                              (schedule[index].status.toString() == 'WAITING' && (today.toString().split(" ")[0] == day) ) ? Row(
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: [
+                                                  GestureDetector(
+                                                    onTap: (){
+                                                      setState(() {
+                                                        showdialogConfirm('Bắt Đầu','WAITING',schedule[index].id);
+                                                      });
+                                                    },
+                                                    child: ConfirmButton(title: "Làm", width: 80.0),
+                                                  ),
+                                                  const SizedBox(width: 10,)
+                                                ],
+                                              ) : (schedule[index].status.toString() == 'WORKING' && (today.toString().split(" ")[0] == day)) ?  Row(
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: [
+                                                  GestureDetector(
+                                                    onTap: (){
+                                                      showdialogConfirm('Kết Thúc Công Việc','WORKING',schedule[index].id);
+                                                    },
+                                                    child: ConfirmButton(title: "Xong", width: 80.0),
+                                                  ),
+                                                  const SizedBox(width: 10,)
+                                                ],
+                                              ) : const SizedBox(),
+                                              const SizedBox(height: 10,)
                                             ],
                                           ),
-                                          const SizedBox(height: 5,),
-                                          _contractFiled2('Khách hàng', schedule[index].showContractModel!.fullName.toString()),
-                                          _contractFiled2('Địa chỉ', schedule[index].showContractModel!.address.toString()),
-                                          _contractFiled2('Điện thoại', schedule[index].showContractModel!.phone.toString()),
-                                          const SizedBox(height: 5,),
-                                        ],
+                                        ),
                                       ),
+                                      onTap: () async{
+                                        Contract contract = await fetchAContract(schedule[index].contractID);
+                                        Navigator.of(context).push(MaterialPageRoute(
+                                          builder: (context) => ContractDetailPage(contractID: contract.id),
+                                        ));
+                                      },
                                     ),
-                                  ),
-                                  Container(
-                                    height: 6,
-                                    decoration: const BoxDecoration(color: divince),
-                                  ),
-                                ],
-                              );
-                            }
-                          } return const SizedBox();
-                        },
-                        itemCount: schedule.length);
+                                    Container(
+                                      height: 6,
+                                      decoration: const BoxDecoration(color: divince),
+                                    ),
+                                  ],
+                                );
+                              }
+                            } return const SizedBox();
+                          },
+                          itemCount: schedule.length),
+                    );
                   }
                 }
                 return const Center(
-                  child: Text('Error'),
+                  child: Text('Không có kết quả để hiển thị'),
                 );
               },
             ),
-          ) : const SizedBox(),
+          ) /*: const SizedBox()*/,
         ],
       ),
     );
@@ -153,9 +216,104 @@ class _CanlenderComponentState extends State<CanlenderComponent> {
       case 6:
         return 'Thứ 7';
       case 7:
-        return 'Chủ Nhật';
+        return 'Chủ nhật';
       default:
         return '';
     }
+  }
+
+  dynamic showdialogConfirm(title, status, id) {
+    var size = MediaQuery.of(context).size;
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          _pickImage(ImageSource.gallery);
+          return AlertDialog(
+            title: Center(
+              child: Text(
+                'Xác Nhận ' + title,
+                style: const TextStyle(color: buttonColor, fontSize: 25),
+              ),
+            ),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Quay lại',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      if(status == "WAITING"){
+                        Navigator.of(context).pop();
+                        setState(() {
+                          checkStartWorking(id, imgURL.last , widget.staffID!);
+                        });
+                      }
+                      if(status == "WORKING"){
+                        Navigator.of(context).pop();
+                        setState(() {
+                          checkEndWorking(id, imgURL.last , widget.staffID!);
+                        });
+                      }
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Xác nhận',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                ],
+              )
+            ],
+          );
+        });
+  }
+
+  List<String> imgURL = [];
+  List<File> listFile = [];
+
+  Future _pickImage(ImageSource source) async {
+    final image = await ImagePicker().pickImage(source: source);
+    // final image = await ImagePicker().pickMedia();
+    if (image == null) return;
+    File? img = File(image.path);
+    OverlayLoadingProgress.start(context);
+    ImgProvider().upload(img).then((value) {
+      setState(() {
+        imgURL.add(value);
+        listFile.add(img);
+      });
+      OverlayLoadingProgress.stop();
+    });
+
+    // ImgProvider().upload(img);
   }
 }

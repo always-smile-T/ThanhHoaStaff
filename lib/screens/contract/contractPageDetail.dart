@@ -1,21 +1,31 @@
 // ignore_for_file: must_be_immutable, file_names, non_constant_identifier_names, prefer_interpolation_to_compose_strings
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:overlay_loading_progress/overlay_loading_progress.dart';
+import 'package:thanhhoa_garden_staff_app/components/button/dialog_button.dart';
 import 'package:thanhhoa_garden_staff_app/models/contract/contractDetail/contract_detail.dart';
+import 'package:thanhhoa_garden_staff_app/screens/contract/confirmContract.dart';
 import '../../components/appBar.dart';
 import '../../components/circular.dart';
+import '../../components/note.dart';
 import '../../constants/constants.dart';
 import '../../models/contract/contract.dart';
 import '../../providers/contract/contract_provider.dart';
+import '../../providers/img_provider.dart';
+import '../../utils/connection/utilsConnection.dart';
 import '../../utils/format/date.dart';
 import '../../utils/format/status.dart';
+import '../schedule/workingDateScreen.dart';
+import 'manaContractDetail.dart';
 
 class ContractDetailPage extends StatefulWidget {
-  ContractDetailPage({super.key, required this.contractID, required this.contract});
+  ContractDetailPage({super.key,this.contract, required this.contractID});
   String? contractID;
   final contract;
   @override
@@ -28,11 +38,11 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
   int pageNo = 0;
   int PageSize = 10;
   List<ContractDetail> listContract = [];
+  String reason = '';
 
 
   @override
   Widget build(BuildContext context) {
-    Contract contract = widget.contract;
     var size = MediaQuery.of(context).size;
     var f = NumberFormat("###,###,###", "en_US");
     return Scaffold(
@@ -65,16 +75,15 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
             decoration: const BoxDecoration(color: divince),
           ),
           Expanded(
-              child: selectedTab == 0 ? _ContractInfo() : _ServiceInfo()),
+              child: _ServiceInfo()),
         ]),
       ),
     );
   }
 
   //Info Contract
-  Widget _ContractInfo(){
+  Widget _ContractInfo(contract){
     var size = MediaQuery.of(context).size;
-    Contract contract = widget.contract;
     var f = NumberFormat("###,###,###", "en_US");
     return SingleChildScrollView(
       child: Column(
@@ -94,20 +103,25 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                   _contractFiled('ID hợp đồng', contract.id.toString()),
                   _contractFiled('Tên hợp đồng',contract.title.toString()),
                   _contractFiled('Ngày Bắt Đầu',formatDatenoTime(contract.startedDate.toString())),
-                  _contractFiled('Ngày kết thúc',formatDatenoTime(contract.endedDate.toString())),
+                  _contractFiled('Ngày kết thúc',formatDatenoTime(contract.expectedEndedDate.toString())),
                   _contractFiled('Giá trị hợp đồng', '${f.format(contract.total)} đ'),
-                  _contractFiled('Đã cọc', '${f.format(contract.deposit)} đ'),
                   Row(
                     children: [
                       const Text('Trạng thái: ', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black),),
                       Container(
-                        width: 150,
+                        width: 120,
                         height: 25,
                         decoration: BoxDecoration(
                           color: divince,
                           border: Border.all(width: 1)
                         ),
                           child: Center(child: Text(formatStatus(contract.status.toString()), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: formatColorStatus(contract.status.toString())),))),
+                      const SizedBox(width: 10,),
+                      (contract.status.toString() == 'CONFIRMING') ? GestureDetector(
+                           onTap: (){
+                             (contract.status.toString() == 'CONFIRMING') ? showdialogConfirm(formatCheckContract(contract.status.toString()), contract.status.toString(), contract.id, contract.showStaffModel!.id) : null;
+                      }, child: Text(formatContractStatus(contract.status.toString()),
+                        style: TextStyle(color: buttonColor, fontWeight: FontWeight.bold, fontSize: 16,),)) : const SizedBox(),
                     ],
                   )
                 ],
@@ -180,7 +194,6 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
   //Info Service
   Widget _ServiceInfo (){
     var size = MediaQuery.of(context).size;
-    Contract contract = widget.contract;
     var f = NumberFormat("###,###,###", "en_US");
     return SingleChildScrollView(
       child: Column(
@@ -201,7 +214,7 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                     ),
                   );
                 } else {
-                  return ListView.builder(
+                  return selectedTab == 0 ? _ContractInfo(cDetail[0].showContractModel!) : ListView.builder(
                       controller: _scrollController,
                       shrinkWrap: true,
                       itemCount: cDetail.length,
@@ -241,18 +254,62 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
                                             mainAxisAlignment: MainAxisAlignment.start,
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              _contractFiled(cDetail[index].showServiceModel!.id == 'SE003' ? 'Diện tích vườn' : 'Chiều cao cây', cDetail[index].showServiceTypeModel!.typeName.toString()),
-                                              _contractFiledColor('Mô tả', cDetail[index].showServiceModel!.description.toString(), HintIcon),
+                                              _contractFiled(cDetail[index].showServiceModel!.id == 'SE003' ? 'Diện tích vườn' : 'Chiều cao cây', cDetail[index].showServiceTypeModel!.typeSize.toString() + ' ' + cDetail[index].showServiceTypeModel!.typeUnit.toString()),
+                                              //_contractFiledColor('Mô tả', cDetail[index].showServiceModel!.description.toString(), HintIcon),
                                               _contractFiled('Lịch chăm sóc',cDetail[index].timeWorking.toString()),
                                               _contractFiled('Ngày bắt đầu',formatDatenoTime(cDetail[index].startDate.toString())),
-                                              _contractFiled('Ngày kết thúc',formatDatenoTime(cDetail[index].endDate.toString())),
+                                              _contractFiled('Ngày kết thúc',formatDatenoTime(cDetail[index].expectedEndDate.toString())),
                                               _contractFiled('Thời hạn dịch vụ', cDetail[index].showServicePackModel!.packRange.toString() + ' ' + cDetail[index].showServicePackModel!.packUnit.toString() ),
-                                              _contractFiledColor('Chiết khấu', cDetail[index].showServicePackModel!.packPercentage.toString() + ' (%)' , highLightText),
-                                              _contractFiledColor('Giá',f.format(cDetail[index].showServiceModel!.price), priceColor),
+                                              _contractFiledColor('Chiết khấu', cDetail[index].showServicePackModel!.packRange.toString() + ' (%)' , highLightText),
+                                              cDetail[index].plantStatus != null ? _contractFiled('Tình trạng cây trước dịch vụ', cDetail[index].plantStatus.toString()) : const SizedBox(),
+                                              cDetail[index].plantStatusIMGModelList!.isNotEmpty ? Container(
+                                                  decoration: BoxDecoration(
+                                                    //shape: BoxShape.circle,
+                                                      border: Border.all(
+                                                          width: 3, color: Colors.white)),
+                                                  width: 120,
+                                                  height: 120,
+                                                  child: Image.network( cDetail[index].plantStatusIMGModelList!.isEmpty ? getImageNoAvailableURL : cDetail[index].plantStatusIMGModelList![0].imgUrl.toString(), fit: BoxFit.fill,)
+                                              ) : const SizedBox(),
                                             ],
                                           ),
                                         ),
                                       ),
+                                      (cDetail[index].showContractModel!.status == "CONFIRMING") ? Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: (){
+                                              cDetail[index].plantStatusIMGModelList!.isEmpty ? Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (context) => ManaContractDetail(contractID: cDetail[index].showContractModel!.id, workingDate: cDetail[index].timeWorking, des: cDetail[index].note, contractDetailID: cDetail[index].id,
+                                                  startDate: cDetail[index].startDate, endDate: cDetail[index].expectedEndDate, servicePackID: cDetail[index].showServicePackModel!.id, serviceTypeID: cDetail[index].showServiceTypeModel!.id,
+                                                  serviceID: cDetail[index].showServiceModel!.id,price: cDetail[index].price, isUpdate: 0, serviceType: cDetail[index].showServiceTypeModel),
+                                              )):  Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (context) => ManaContractDetail(contractID: cDetail[index].showContractModel!.id, workingDate: cDetail[index].timeWorking, des: cDetail[index].note, contractDetailID: cDetail[index].id,
+                                                startDate: cDetail[index].startDate, endDate: cDetail[index].expectedEndDate, servicePackID: cDetail[index].showServicePackModel!.id, serviceTypeID: cDetail[index].showServiceTypeModel!.id,
+                                                 serviceID: cDetail[index].showServiceModel!.id,price: cDetail[index].price, plantStatus: cDetail[index].plantStatus!,
+                                                plantIMG: cDetail[index].plantStatusIMGModelList![0].imgUrl!, isUpdate: 1, serviceType: cDetail[index].showServiceTypeModel),
+                                              ));
+                                            },
+                                            child: const ConfirmButton(title: 'Chỉnh sửa', width: 120.0),
+                                          ),
+                                          const SizedBox(width: 10,)
+                                        ],
+                                      ) : (checkContractStatus(cDetail[index].showContractModel!.status)) ? Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: (){
+                                              Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (context) => WorkingDateFollowContractPage(contractDetailID: cDetail[index].id),
+                                              ));
+                                            },
+                                            child: ConfirmButton(title: 'Xem lịch', width: 120.0),
+                                          ),
+                                          const SizedBox(width: 10,)
+                                        ],
+                                      ): const SizedBox(),
+                                      const SizedBox(height: 10,)
                                     ],
                                   )
                                 ],
@@ -315,7 +372,6 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
   }
 
   Widget _listCategory() {
-
     return ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
@@ -343,6 +399,181 @@ class _ContractDetailPageState extends State<ContractDetailPage> {
           );
         },
         itemCount: 2);
+  }
+
+  dynamic showdialogConfirm(title, status, id, staffID) {
+    var size = MediaQuery.of(context).size;
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          status == 'CONFIRMING' ? _pickImage(ImageSource.gallery) : null;
+          return AlertDialog(
+            title: Center(
+              child: Text(
+                'Xác Nhận ' + title,
+                style: const TextStyle(color: buttonColor, fontSize: 25),
+              ),
+            ),
+            actions: [
+              Row(
+
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Quay lại',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      /*if(status == "APPROVED"){
+                        Navigator.of(context).pop();
+                        setState(() {
+                          addContractIMG(id, imgURL.last);
+                          changeContractStatus(id, 'CONFIRMING', null, staffID);
+                        });
+                      }*/
+                      if(status == "CONFIRMING"){
+                        Navigator.of(context).pop();
+                        setState(() {
+                          addContractIMG(id, imgURL.last);
+                          Navigator.pop(context);
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => ContractDetailPage(contractID: widget.contractID),
+                          ));
+                        });
+                      }
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Xác nhận',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                ],
+              )
+            ],
+          );
+        });
+  }
+
+  List<String> imgURL = [];
+  List<File> listFile = [];
+
+  Future _pickImage(ImageSource source) async {
+    final image = await ImagePicker().pickImage(source: source);
+    // final image = await ImagePicker().pickMedia();
+    if (image == null) return;
+    File? img = File(image.path);
+    OverlayLoadingProgress.start(context);
+    ImgProvider().upload(img).then((value) {
+      setState(() {
+        imgURL.add(value);
+        listFile.add(img);
+      });
+      OverlayLoadingProgress.stop();
+    });
+
+    // ImgProvider().upload(img);
+  }
+
+  dynamic showdialogConfirmReason(contractDetailID) {
+    // var phone = widget.phone;
+    var size = MediaQuery.of(context).size;
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(
+              child: Text(
+                'Chỉnh Sửa Dịch Vụ',
+                style: TextStyle(color: buttonColor, fontSize: 25),
+              ),
+            ),
+            content: SizedBox(
+                height: 170,
+                width: size.width - 10,
+                child: ConfirmCancelOrder(
+                  callback: setReason,
+                  orrderID: contractDetailID,
+                )),
+            actions: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Huỷ',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: 110,
+                      height: 45,
+                      decoration: BoxDecoration(
+                          color: buttonColor,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Text('Lưu',
+                          style: TextStyle(
+                              color: lightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                ],
+              )
+            ],
+          );
+        });
+  }
+  setReason(String value) {
+    setState(() {
+      reason = value;
+    });
   }
 
   List<String> TabCategory = ['Thông tin hợp đồng', 'Chi Tiết Dịch vụ'];

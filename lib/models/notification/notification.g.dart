@@ -15,8 +15,7 @@ Noty _$NotyFromJson(Map<String, dynamic> json) => Noty(
       date: json['date'] as String?,
     );
 
-Map<String, dynamic> _$NotyToJson(Noty instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$NotyToJson(Noty instance) => <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
       'link': instance.link,

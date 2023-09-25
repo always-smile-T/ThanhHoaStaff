@@ -1,162 +1,103 @@
 import 'package:json_annotation/json_annotation.dart';
 part 'schedule_today.g.dart';
 
+
 @JsonSerializable()
-class ScheduleToday {
+class WorkingInSchedule {
   String? id;
+  String? workingDate;
+  String? startWorking;
+  String? endWorking;
+  String? startWorkingIMG;
+  String? endWorkingIMG;
+  String? status;
+  String? contractID;
+  String? title;
+  String? fullName;
+  String? address;
+  String? phone;
+  String? email;
+  String? contractDetailID;
   String? timeWorking;
   String? note;
   String? startDate;
   String? endDate;
+  String? expectedEndDate;
   double? totalPrice;
-  ShowContractModel? showContractModel;
-  ShowServiceTypeModel? showServiceTypeModel;
-  ShowServiceModel? showServiceModel;
-  ShowServicePackModel? showServicePackModel;
-  List<WorkingDateList>? workingDateList;
-
-  ScheduleToday(
-      {this.id,
-        this.timeWorking,
-        this.note,
-        this.startDate,
-        this.endDate,
-        this.totalPrice,
-        this.showContractModel,
-        this.showServiceTypeModel,
-        this.showServiceModel,
-        this.showServicePackModel,
-        this.workingDateList});
-
-  factory ScheduleToday.fromJson(Map<String, dynamic> json) => _$ScheduleTodayFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ScheduleTodayToJson(this);
-}
-
-@JsonSerializable()
-class ShowContractModel {
-  String? id;
-  String? title;
-  String? fullName;
-  String? email;
-  String? phone;
-  String? address;
-  String? paymentMethod;
-  String? reason;
-  String? createdDate;
-  String? startedDate;
-  String? endedDate;
-  String? approvedDate;
-  String? rejectedDate;
-  double? deposit;
-  double? total;
-  bool? isFeedback;
-  bool? isSigned;
-  String? status;
-  List<ImgList>? imgList;
-  String? showStaffModel;
-  String? showCustomerModel;
-  String? showStoreModel;
-  String? showPaymentTypeModel;
-
-  ShowContractModel(
-      {this.id,
-        this.title,
-        this.fullName,
-        this.email,
-        this.phone,
-        this.address,
-        this.paymentMethod,
-        this.reason,
-        this.createdDate,
-        this.startedDate,
-        this.endedDate,
-        this.approvedDate,
-        this.rejectedDate,
-        this.deposit,
-        this.total,
-        this.isFeedback,
-        this.isSigned,
-        this.status,
-        this.imgList,
-        this.showStaffModel,
-        this.showCustomerModel,
-        this.showStoreModel,
-        this.showPaymentTypeModel});
-
-  factory ShowContractModel.fromJson(Map<String, dynamic> json) => _$ShowContractModelFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ShowContractModelToJson(this);
-}
-
-@JsonSerializable()
-class ImgList {
-  String? id;
-  String? imgUrl;
-
-  ImgList({this.id, this.imgUrl});
-  factory ImgList.fromJson(Map<String, dynamic> json) => _$ImgListFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ImgListToJson(this);
-}
-
-@JsonSerializable()
-class ShowServiceTypeModel {
-  String? id;
+  String? serviceID;
+  String? serviceName;
+  String? serviceTypeID;
   String? typeName;
   int? typePercentage;
   String? typeSize;
   String? typeApplyDate;
-
-  ShowServiceTypeModel(
-      {this.id,
-        this.typeName,
-        this.typePercentage,
-        this.typeSize,
-        this.typeApplyDate});
-
-  factory ShowServiceTypeModel.fromJson(Map<String, dynamic> json) => _$ShowServiceTypeModelFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ShowServiceTypeModelToJson(this);
-}
-
-@JsonSerializable()
-class ShowServiceModel {
-  String? id;
-  String? name;
-  String? description;
-  double? price;
-
-  ShowServiceModel({this.id, this.name, this.description, this.price});
-
-  factory ShowServiceModel.fromJson(Map<String, dynamic> json) => _$ShowServiceModelFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ShowServiceModelToJson(this);
-}
-
-@JsonSerializable()
-class ShowServicePackModel {
-  String? id;
+  String? servicePackID;
   String? packRange;
   int? packPercentage;
   String? packApplyDate;
+  ShowStaffModel? showStaffModel;
 
-  ShowServicePackModel(
-      {this.id, this.packRange, this.packPercentage, this.packApplyDate});
+  WorkingInSchedule(
+      {this.id,
+        this.workingDate,
+        this.startWorking,
+        this.endWorking,
+        this.startWorkingIMG,
+        this.endWorkingIMG,
+        this.status,
+        this.contractID,
+        this.title,
+        this.fullName,
+        this.address,
+        this.phone,
+        this.email,
+        this.contractDetailID,
+        this.timeWorking,
+        this.note,
+        this.startDate,
+        this.endDate,
+        this.expectedEndDate,
+        this.totalPrice,
+        this.serviceID,
+        this.serviceName,
+        this.serviceTypeID,
+        this.typeName,
+        this.typePercentage,
+        this.typeSize,
+        this.typeApplyDate,
+        this.servicePackID,
+        this.packRange,
+        this.packPercentage,
+        this.packApplyDate,
+        this.showStaffModel});
+  factory WorkingInSchedule.fromJson(Map<String, dynamic> json) => _$WorkingInScheduleFromJson(json);
 
-  factory ShowServicePackModel.fromJson(Map<String, dynamic> json) => _$ShowServicePackModelFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ShowServicePackModelToJson(this);
+  Map<String, dynamic> toJson() => _$WorkingInScheduleToJson(this);
 }
 
 @JsonSerializable()
-class WorkingDateList {
-  String? id;
-  String? workingDate;
+class ShowStaffModel {
+  String? fullName;
+  String? email;
+  String? phone;
+  String? address;
+  int? id;
+  String? avatar;
+  bool? gender;
+  String? status;
+  int? totalPage;
 
-  WorkingDateList({this.id, this.workingDate});
+  ShowStaffModel(
+      {this.fullName,
+        this.email,
+        this.phone,
+        this.address,
+        this.id,
+        this.avatar,
+        this.gender,
+        this.status,
+        this.totalPage});
+  factory ShowStaffModel.fromJson(Map<String, dynamic> json) => _$ShowStaffModelFromJson(json);
 
-  factory WorkingDateList.fromJson(Map<String, dynamic> json) => _$WorkingDateListFromJson(json);
-
-  Map<String, dynamic> toJson() => _$WorkingDateListToJson(this);
+  Map<String, dynamic> toJson() => _$ShowStaffModelToJson(this);
 }

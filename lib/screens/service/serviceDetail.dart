@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
@@ -12,15 +10,13 @@ import '../../components/appBar.dart';
 import '../../components/listImg.dart';
 import '../../constants/constants.dart';
 import '../../main.dart';
+import '../../models/contract1/contract.dart';
 import '../../models/service/service.dart';
 import '../../providers/service/service_provider.dart';
 import '../../utils/helper/shared_prefs.dart';
 
-import '../../models/service/service.dart';
-import '../../providers/service/service_provider.dart';
-
 class ServiceDetail extends StatefulWidget {
-  Service service;
+  final Service service;
   ServiceDetail({super.key, required this.service});
 
   @override
@@ -141,11 +137,11 @@ class _ServiceDetailState extends State<ServiceDetail> {
                           ],
                         )
                       ])),
-              /*Container(
+              Container(
                 height: 10,
                 decoration: const BoxDecoration(color: divince),
-              ),*/
-              /*Container(
+              ),
+              Container(
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(5),
                 height: 43,
@@ -155,17 +151,18 @@ class _ServiceDetailState extends State<ServiceDetail> {
                   'Tiến Hành Đặt Dịch Vụ',
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
-              ),*/
-            /*  Container(
-                height: 10,
-                decoration: const BoxDecoration(color: divince),
-              ),*/
-              /*_infor('Thông tin cây (vườn) của bạn :'),
+              ),
               Container(
                 height: 10,
                 decoration: const BoxDecoration(color: divince),
-              ),*/
-             // _serviceTab(),
+              ),
+              _infor('Thông tin cây (vườn) của bạn :'),
+              Container(
+                height: 10,
+                decoration: const BoxDecoration(color: divince),
+              ),
+              _serviceTab(),
+
               Container(
                 height: 10,
                 decoration: const BoxDecoration(color: divince),
@@ -175,7 +172,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
               ),
             ]),
           ),
-          //Positioned(top: size.height - 65, child: _floatingBar()),
+          Positioned(top: size.height - 65, child: _floatingBar()),
         ]),
       ),
     );
@@ -212,18 +209,6 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 height: 10,
               ),
               const Text(
-                'Tên cây (vườn) của bạn :',
-                style: TextStyle(fontSize: 18),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              _textFormField('Tên cây (vườn) của bạn', 'Nhập tên cây (vườn)',
-                  false, () {}, _inforController, 100),
-              const SizedBox(
-                height: 10,
-              ),
-              const Text(
                 'Chiều cao của cây (độ rộng của vườn) :',
                 style: TextStyle(fontSize: 18),
               ),
@@ -231,6 +216,18 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 height: 10,
               ),
               _listSize(widget.service),
+              const SizedBox(
+                height: 10,
+              ),
+              const Text(
+                'Ghi chú :',
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              _textFormField('Mô tả cây (vườn) của bạn', 'Mô tả cây (vườn)',
+                  false, () {}, _inforController, 150, 3),
             ],
           ),
         )
@@ -278,8 +275,15 @@ class _ServiceDetailState extends State<ServiceDetail> {
     );
   }
 
-  Widget _textFormField(String label, String hint, bool readonly,
-      Function()? onTap, TextEditingController controller, maxLength) {
+  Widget _textFormField(
+      String label,
+      String hint,
+      bool readonly,
+      Function()? onTap,
+      TextEditingController controller,
+      maxLength,
+      height,
+      ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -287,14 +291,18 @@ class _ServiceDetailState extends State<ServiceDetail> {
             width: MediaQuery.of(context).size.width - 60,
             child: TextFormField(
               autofocus: false,
+              textAlign: TextAlign.start,
+              minLines: 1,
               readOnly: readonly,
               controller: controller,
               onTap: onTap,
               maxLength: maxLength,
+              maxLines: height,
               validator: (value) {
                 if (value!.isEmpty) {
                   return 'Vui lòng đủ thông tin';
                 }
+                return null;
               },
               decoration: InputDecoration(
                 labelText: label,
@@ -354,8 +362,8 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 width: MediaQuery.of(context).size.width - 130,
                 height: 58,
                 child: AutoSizeText(
-                    'Thời gian ${value.range}'
-                        '(${value.percentage == 0 ? '' : 'ưu đãi  ${value.percentage} %)'}',
+                    'Thời gian ${value.range} ${value.unit}'
+                        '${value.percentage == 0 ? '' : ' ( Ưu đãi  ${value.percentage}% )'}',
                     style: const TextStyle(fontSize: 18, color: buttonColor))),
           );
         }).toList(),
@@ -393,7 +401,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
               const SizedBox(
                 height: 10,
               ),
-              (service.serviceID == 'SE002')
+              (!service.atHome)
                   ? const SizedBox()
                   : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -432,7 +440,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
               _textFormField('Ngày bắt đầu hợp đồng', 'Chọn ngày bắt đầu', true,
                       () {
                     getStartDate();
-                  }, _StartDateController, null),
+                  }, _StartDateController, null, 1),
               const SizedBox(
                 height: 10,
               ),
@@ -444,10 +452,10 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 height: 10,
               ),
               _textFormField('Ngày kết thúc hợp đồng', 'Ngày kết thức', true,
-                  null, _endDateController, null),
+                  null, _endDateController, null, 1),
             ],
           ),
-        )
+        ),
       ]),
     );
   }
@@ -467,19 +475,38 @@ class _ServiceDetailState extends State<ServiceDetail> {
   }
 
   getEndDate(DateTime startDate, ServicePack servicePack) async {
-    switch (servicePack.range) {
-      case '1 tháng':
-        endDate = startDate.add(const Duration(days: 30));
-        break;
-      case '3 tháng':
-        endDate = startDate.add(const Duration(days: 90));
-        break;
-      case '6 tháng':
-        endDate = startDate.add(const Duration(days: 180));
-        break;
-      case '1 năm':
-        endDate = startDate.add(const Duration(days: 365));
-        break;
+    switch (servicePack.unit) {
+      case 'tháng':
+        {
+          switch (servicePack.range) {
+            case '1':
+              endDate = startDate.add(const Duration(days: 30));
+              break;
+            case '3':
+              endDate = startDate.add(const Duration(days: 90));
+              break;
+            case '6':
+              endDate = startDate.add(const Duration(days: 180));
+              break;
+          }
+          break;
+        }
+      case 'năm':
+        {
+          switch (servicePack.range) {
+            case '1':
+              endDate = startDate.add(const Duration(days: 365));
+              break;
+            default:
+              endDate = await showDatePicker(
+                  helpText: 'Chọn ngày kết thúc hợp đồng',
+                  context: context,
+                  initialDate: startDate.add(const Duration(days: 366)),
+                  firstDate: startDate.add(const Duration(days: 366)),
+                  lastDate: DateTime(2101));
+          }
+          break;
+        }
       default:
         endDate = await showDatePicker(
             helpText: 'Chọn ngày kết thúc hợp đồng',
@@ -492,8 +519,8 @@ class _ServiceDetailState extends State<ServiceDetail> {
       _endDateController.text = formatDate1(endDate!);
       print('Start : ' + _StartDateController.text);
       print('End: ' + _endDateController.text);
-      //totalPrice = setPriceService(widget.service.price, typeService.percentage,
-         // servicePackSelect.percentage, countMonths(startDate, endDate!));
+      totalPrice = setPriceService(widget.service.price, typeService.percentage,
+          servicePackSelect.percentage, countMonths(startDate, endDate!));
     });
   }
 
@@ -539,6 +566,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                   if (value.length == 0) {
                     return "Bạn chưa chọn ngày làm việc";
                   }
+                  return null;
                 },
                 onConfirm: (values) {
                   _multiSelectKey.currentState!.validate();
@@ -596,12 +624,12 @@ class _ServiceDetailState extends State<ServiceDetail> {
             style: const TextStyle(
                 fontSize: 20, color: priceColor, fontWeight: FontWeight.w500),
           ),
-          //const Spacer(),
-          /*GestureDetector(
+          const Spacer(),
+          GestureDetector(
             onTap: () {
               // print('trước 123 : ' +
               //     sharedPreferences.getString('ContactDetail')!);
-              //addContactService();
+              addContactService();
             },
             child: Container(
               height: 45,
@@ -617,20 +645,21 @@ class _ServiceDetailState extends State<ServiceDetail> {
                     fontWeight: FontWeight.bold),
               ),
             ),
-          )*/
+          )
         ],
       ),
     );
   }
 
-  /*addContactService() {
+  addContactService() {
     List<Map<String, dynamic>> listContactDetail =
     getListContactDetailFromSharedPrefs();
 
     if (_formKey.currentState!.validate()) {
       ContactDetail contactDetail = ContactDetail(
           note: _inforController.text,
-          timeWorking: selectDate!.toString(),
+          timeWorking:
+          selectDate!.toString().replaceAll(RegExp(r'[\[*\]]'), ''),
           servicePackID: servicePackSelect.id,
           serviceTypeID: typeService.id,
           startDate: formatDateStartDateContact(_StartDateController.text),
@@ -651,6 +680,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
           backgroundColor: Colors.green,
           textColor: Colors.white,
           fontSize: 16.0);
+      _inforController.clear();
     }
-  }*/
+  }
 }

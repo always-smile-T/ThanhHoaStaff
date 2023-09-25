@@ -22,7 +22,7 @@ class InfoField extends StatelessWidget {
         ),
         Container(
           margin: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-          height: height,
+          height: 50,
           width: width,
           decoration: BoxDecoration(
             color: Colors.white,

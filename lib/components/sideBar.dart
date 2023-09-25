@@ -9,7 +9,7 @@ import '../blocs/authentication/auth_event.dart';
 import '../constants/constants.dart';
 import '../providers/authentication/authantication_provider.dart';
 import '../screens/authentication/loginPage.dart';
-import '../models/authentication/user.dart' as UserObj;
+import '../models/authentication/user_provider.dart' as UserObj;
 import '../screens/bonsai/searchScreen.dart';
 import '../screens/home/homePage.dart';
 import '../utils/helper/shared_prefs.dart';

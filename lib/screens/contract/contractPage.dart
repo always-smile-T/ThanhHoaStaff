@@ -16,8 +16,7 @@ import '../../utils/format/date.dart';
 import 'contractPageDetail.dart';
 
 class ContractPage extends StatefulWidget {
-  const ContractPage({super.key, required this.contractID});
-  final contractID;
+  const ContractPage({super.key});
 
   @override
   State<ContractPage> createState() => _ContractPageState();
@@ -102,15 +101,19 @@ class _ContractPageState extends State<ContractPage> {
                 shrinkWrap: true,
                 itemCount: contract.length,
                 itemBuilder: (BuildContext context, int index){
-                  return ((contract[index].status == 'WORKING' && selectedTab == 0) ||
-                      ((contract[index].status == 'DENIED' || (contract[index].status == 'STAFFCANCELED') || (contract[index].status == 'CUSTOMERCANCELED')) && selectedTab == 3) ||
-                      (contract[index].status == 'SIGNED' && selectedTab == 4) ||
+                  bool isConfirming = false;
+                  if(contract[index].status == "CONFIRMING"){
+                    isConfirming = true;
+                  }
+                  return ((contract[index].status == 'WORKING' && selectedTab == 4) ||
+                      ((contract[index].status == 'DENIED' || (contract[index].status == 'CUSTOMERCANCELED')) && selectedTab == 6) ||
+                      (contract[index].status == 'SIGNED' && selectedTab == 3) ||
                       (contract[index].status == 'DONE' && selectedTab == 5) ||
-                      (contract[index].status == 'WAITING' && selectedTab == 1) || (selectedTab == 2)
+                      (contract[index].status == 'CONFIRMING' && selectedTab == 2) ||(selectedTab == 0)
                   ) ? GestureDetector(
                     onTap: (){
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ContractDetailPage(contractID: contract[index].id, contract: contract[index]),
+                        builder: (context) => ContractDetailPage(contractID: contract[index].id),
                       ));
                     },
                     child: Container(height: 180,
@@ -160,7 +163,7 @@ class _ContractPageState extends State<ContractPage> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text((contract[index].title.toString().length >= 25) ? contract[index].title.toString().substring(0,22) + "..." : contract[index].title.toString(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),),
+                                  Text((contract[index].title.toString().length >= 25) ? contract[index].title.toString().substring(0,22) + "..." : contract[index].title.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
                                   const SizedBox(
                                     height: 10,
                                   ),
@@ -170,7 +173,7 @@ class _ContractPageState extends State<ContractPage> {
                                     children: [
                                       _contractFiled('Khách hàng',contract[index].fullName.toString().length >= 25 ? (contract[index].fullName.toString().substring(0,22) + "...") : contract[index].fullName.toString()),
                                       _contractFiled('Ngày bắt đầu',formatDatenoTime(contract[index].startedDate.toString())),
-                                      _contractFiled('Ngày kết thúc',formatDatenoTime(contract[index].endedDate.toString())),
+                                      _contractFiled('Ngày kết thúc',formatDatenoTime(contract[index].expectedEndedDate.toString())),
                                       _contractFiled('Giá trị hợp đồng','${f.format(contract[index].total)} đ'),
                                       _contractFiledColor('Trạng thái', formatStatus(contract[index].status.toString()), formatColorStatus(contract[index].status.toString())),
                                       _contractFiled('Địa chỉ',contract[index].address.toString().length >= 25 ? (contract[index].address.toString().substring(0,22) + "...") : contract[index].address.toString()),
@@ -273,12 +276,12 @@ class _ContractPageState extends State<ContractPage> {
 
   //List category
   List filter = [
-    'Đang hoạt động',
-    'Chờ xét duyệt',
     'Tất cả',
-    'Đã huỷ',
+    'Đang xét duyệt',
     'Đã Ký',
-    'Hoàn Thành'
+    'Đang hoạt động',
+    'Hoàn Thành',
+    'Đã huỷ'
   ];
 
 }

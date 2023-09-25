@@ -38,7 +38,7 @@ class _NoteOrderState extends State<NoteOrder> {
         Container(
           padding: const EdgeInsets.all(10),
           child: const Text(
-            'Lưu ý',
+            'Chọn lịch',
             style: TextStyle(
                 color: darkText, fontSize: 16, fontWeight: FontWeight.w500),
           ),
@@ -63,10 +63,11 @@ class _NoteOrderState extends State<NoteOrder> {
               width: size.width - 30,
               padding: const EdgeInsets.all(10),
               child: const AutoSizeText(
-                'Khách hàng có thể huỷ đơn và được hoàn tiền 100% khi đơn chưa được giao.',
+                'Khách hàng có thể huỷ đơn và được hoàn tiền 100% khi đơn chưa được cửa hàng xác nhận.',
                 style: TextStyle(color: darkText, fontSize: 18),
               ),
             ),
+
           ],
         ),
         Row(
@@ -89,7 +90,7 @@ class _NoteOrderState extends State<NoteOrder> {
               width: size.width - 30,
               padding: const EdgeInsets.all(10),
               child: const AutoSizeText(
-                'Khi đơn được giao đến, khách hàng vui lòng kiểm tra sự dầy đủ và chính xác của đơn hàng.',
+                'Khi đơn được giao đến, khách hàng được quyền kiểm tra sự dầy đủ và chính xác của đơn hàng.',
                 style: TextStyle(color: darkText, fontSize: 18),
               ),
             ),
@@ -115,21 +116,10 @@ class _NoteOrderState extends State<NoteOrder> {
               width: size.width - 30,
               padding: const EdgeInsets.all(10),
               child: RichText(
-                text: TextSpan(
-                    style: const TextStyle(color: darkText, fontSize: 18),
-                    text: 'Mọi thắc mắc/bất tiện vui lòng gọi trực tiếp cho',
-                    children: [
-                      TextSpan(
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () => _makePhoneCall(phone!),
-                        text: ' chúng tôi ',
-                        style: const TextStyle(
-                            color: Colors.blue,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      const TextSpan(text: 'để được giải đáp/ xử lý kịp thời.')
-                    ]),
+                text: const TextSpan(
+                    style:  TextStyle(color: darkText, fontSize: 18),
+                    text: 'Lưu lại hình ảnh chứng minh đơn hàng đã được giao khi thực hiện giao hàng.',
+                    ),
               ),
             ),
           ],
@@ -339,7 +329,7 @@ class _ConfirmCancelOrderState extends State<ConfirmCancelOrder> {
           Row(
             children: [
               const Text(
-                'Hủy đơn hàng: ',
+                'Chỉnh sửa dịch vụ: ',
                 style: TextStyle(
                     color: darkText, fontSize: 15, fontWeight: FontWeight.bold),
               ),
@@ -357,8 +347,13 @@ class _ConfirmCancelOrderState extends State<ConfirmCancelOrder> {
           ),
           Row(
             children: [
-              const Text(
-                'Lý do hủy đơn : ',
+              _inforRow(
+                  'Lịch chăm sóc',
+                  workingDate
+                      .toString()
+                      .replaceAll(RegExp(r'[\[*\]]'), '')),
+              /*const Text(
+                'Chọn ngày : ',
                 style: TextStyle(
                     color: darkText, fontSize: 15, fontWeight: FontWeight.bold),
               ),
@@ -375,6 +370,8 @@ class _ConfirmCancelOrderState extends State<ConfirmCancelOrder> {
                   setState(() {
                     dropdownValue = value!;
                     widget.callback(value);
+                    workingDate.add(value);
+                    print("workingDate: " + workingDate.toString());
                   });
                 },
                 items: listRea.map<DropdownMenuItem<String>>((String value) {
@@ -383,14 +380,13 @@ class _ConfirmCancelOrderState extends State<ConfirmCancelOrder> {
                     child: SizedBox(width: 140, child: Text(value)),
                   );
                 }).toList(),
-              )
+              )*/
             ],
           ),
-          (dropdownValue == 'Lý do khác')
-              ? Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Nhập lý do : '),
+              const Text('lưu ý : '),
               TextFormField(
                 controller: _reasonController,
                 maxLength: 150,
@@ -402,9 +398,60 @@ class _ConfirmCancelOrderState extends State<ConfirmCancelOrder> {
               ),
             ],
           )
-              : Container()
         ],
       ),
+    );
+  }
+  List<String> workingDate = [];
+
+   convertWorkingDate(workingDate) {
+
+    // Sử dụng phương thức join để nối các phần tử trong danh sách
+    String chuoiNgay = workingDate.join(" - ");
+
+    return chuoiNgay;// Kết quả: "Thứ 2 - Thứ 3 - Thứ 4"
+  }
+  Widget _inforRow(String title, String value) {
+    var size = MediaQuery.of(context).size;
+    return Column(
+      children: [
+        Container(
+          width: size.width,
+          child: Row(
+            children: [
+              const SizedBox(
+                width: 30,
+              ),
+              Container(
+                constraints: BoxConstraints(
+                  minWidth: size.width * 0.2,
+                ),
+                child: AutoSizeText(
+                  '$title : ',
+                  maxLines: 1,
+                  style: const TextStyle(
+                      color: darkText,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              Container(
+                constraints: BoxConstraints(
+                  minWidth: size.width * 0.5,
+                ),
+                child: AutoSizeText(
+                  value,
+                  maxLines: 1,
+                  style: const TextStyle(color: darkText, fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+      ],
     );
   }
 }

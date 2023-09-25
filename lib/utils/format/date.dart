@@ -51,3 +51,34 @@ String formatDatenoTime(String date) {
   }
   return 'Đang cập nhật';
 }
+
+String formatDatenoTime2(String date) {
+  try {
+    DateTime dateTime = DateTime.parse(date);
+    String formattedString =
+        "${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}";
+
+    return formattedString;
+  } catch (e) {
+    print('This is not a valid JSON.');
+  }
+  return 'Đang cập nhật';
+}
+
+String formatDateAPI(String inputDate) {
+  // Tách ngày, tháng và năm từ chuỗi đầu vào
+  List<String> dateParts = inputDate.split('/');
+
+  if (dateParts.length == 3) {
+    String day = dateParts[0];
+    String month = dateParts[1];
+    String year = dateParts[2];
+
+    // Định dạng lại chuỗi ngày tháng năm
+    String formattedDate = "$year-$month-$day";
+    return formattedDate;
+  } else {
+    // Trả về chuỗi gốc nếu đầu vào không hợp lệ
+    return inputDate;
+  }
+}

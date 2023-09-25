@@ -16,15 +16,18 @@ Contract _$ContractFromJson(Map<String, dynamic> json) => Contract(
       paymentMethod: json['paymentMethod'] as String?,
       reason: json['reason'] as String?,
       createdDate: json['createdDate'] as String?,
+      confirmedDate: json['confirmedDate'] as String?,
+      signedDate: json['signedDate'] as String?,
       startedDate: json['startedDate'] as String?,
       endedDate: json['endedDate'] as String?,
+      expectedEndedDate: json['expectedEndedDate'] as String?,
       approvedDate: json['approvedDate'] as String?,
       rejectedDate: json['rejectedDate'] as String?,
-      deposit: (json['deposit'] as num?)?.toDouble(),
       total: (json['total'] as num?)?.toDouble(),
       isFeedback: json['isFeedback'] as bool?,
       isSigned: json['isSigned'] as bool?,
       status: json['status'] as String?,
+      isPaid: json['isPaid'] as bool?,
       imgList: (json['imgList'] as List<dynamic>?)
           ?.map((e) => ImgList.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -40,11 +43,6 @@ Contract _$ContractFromJson(Map<String, dynamic> json) => Contract(
           ? null
           : ShowStoreModel.fromJson(
               json['showStoreModel'] as Map<String, dynamic>),
-      showPaymentTypeModel: json['showPaymentTypeModel'] == null
-          ? null
-          : ShowPaymentTypeModel.fromJson(
-              json['showPaymentTypeModel'] as Map<String, dynamic>),
-      totalPage: json['totalPage'],
     );
 
 Map<String, dynamic> _$ContractToJson(Contract instance) => <String, dynamic>{
@@ -57,21 +55,22 @@ Map<String, dynamic> _$ContractToJson(Contract instance) => <String, dynamic>{
       'paymentMethod': instance.paymentMethod,
       'reason': instance.reason,
       'createdDate': instance.createdDate,
+      'confirmedDate': instance.confirmedDate,
+      'signedDate': instance.signedDate,
       'startedDate': instance.startedDate,
       'endedDate': instance.endedDate,
+      'expectedEndedDate': instance.expectedEndedDate,
       'approvedDate': instance.approvedDate,
       'rejectedDate': instance.rejectedDate,
-      'deposit': instance.deposit,
       'total': instance.total,
       'isFeedback': instance.isFeedback,
       'isSigned': instance.isSigned,
       'status': instance.status,
+      'isPaid': instance.isPaid,
       'imgList': instance.imgList,
       'showStaffModel': instance.showStaffModel,
       'showCustomerModel': instance.showCustomerModel,
       'showStoreModel': instance.showStoreModel,
-      'showPaymentTypeModel': instance.showPaymentTypeModel,
-      'totalPage': instance.totalPage,
     };
 
 ImgList _$ImgListFromJson(Map<String, dynamic> json) => ImgList(
