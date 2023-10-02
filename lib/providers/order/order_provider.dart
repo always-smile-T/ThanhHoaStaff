@@ -375,7 +375,6 @@ Future<void> ChangeStatusOrder(orderID, status, img) async {
     Uri.parse(url),
     headers: header,
   );
-  print("response.statusCode: " + response.statusCode.toString());
 
   if (response.statusCode == 200) {
 

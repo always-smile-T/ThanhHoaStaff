@@ -10,6 +10,7 @@ class WorkingInSchedule {
   String? endWorking;
   String? startWorkingIMG;
   String? endWorkingIMG;
+  bool? isReported;
   String? status;
   String? contractID;
   String? title;
@@ -24,6 +25,8 @@ class WorkingInSchedule {
   String? endDate;
   String? expectedEndDate;
   double? totalPrice;
+  String? plantStatus;
+  String? plantName;
   String? serviceID;
   String? serviceName;
   String? serviceTypeID;
@@ -44,6 +47,7 @@ class WorkingInSchedule {
         this.endWorking,
         this.startWorkingIMG,
         this.endWorkingIMG,
+        this.isReported,
         this.status,
         this.contractID,
         this.title,
@@ -58,6 +62,8 @@ class WorkingInSchedule {
         this.endDate,
         this.expectedEndDate,
         this.totalPrice,
+        this.plantStatus,
+        this.plantName,
         this.serviceID,
         this.serviceName,
         this.serviceTypeID,

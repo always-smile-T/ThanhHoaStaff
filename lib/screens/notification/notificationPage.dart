@@ -95,6 +95,12 @@ class _NotificationPageState extends State<NotificationPage> {
           onTap: (){
             readAllNoty();
             setState(() {
+              Navigator.of(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotificationPage(),
+                  ));
             });
           },
             child: const ReadALlComponent(title: 'đánh dấu đã đọc')))

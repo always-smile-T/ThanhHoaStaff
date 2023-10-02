@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:thanhhoa_garden_staff_app/providers/notification/google_notification_provider.dart';
+import 'package:thanhhoa_garden_staff_app/providers/schedule/workingProvider.dart';
 //import '../../blocs/AppBlocObserver%20.dart';
 import '../../blocs/authentication/auth_bloc.dart';
 import '../../blocs/bonsai/bonsai_bloc.dart';
@@ -24,6 +25,7 @@ import '../../providers/feedback/feedback_provider.dart';
 import '../../providers/order/order_provider.dart';
 import '../../providers/service/service_provider.dart';
 import '../../providers/store/store_provider.dart';
+import 'blocs/workingDate/workingDate_bloc.dart';
 import 'firebase_options.dart';
 import '../../screens/authentication/loginPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -92,6 +94,8 @@ class MyApp extends StatelessWidget {
         ListenableProvider<FeedbackProvider>(create: (_) => FeedbackProvider()),
         ListenableProvider<StoreProvider>(create: (_) => StoreProvider()),
         ListenableProvider<OrderProvider>(create: (_) => OrderProvider()),
+        ListenableProvider<WorkingDateProvider>(
+            create: (_) => WorkingDateProvider()),
         ProxyProvider<AuthenticationProvider, AuthBloc>(
           update: (_, authProvider, __) => AuthBloc(authProvider: authProvider),
         ),
@@ -116,6 +120,9 @@ class MyApp extends StatelessWidget {
         ProxyProvider<OrderProvider, OrderBloc>(
             update: (_, orderProvider, __) =>
                 OrderBloc(OrderProvider: orderProvider)),
+        ProxyProvider<WorkingDateProvider, WorkingDateBloc>(
+            update: (_, workingDateProvider, __) =>
+                WorkingDateBloc(WorkingDateProvider: workingDateProvider)),
       ],
       child: MaterialApp(
         title: 'Thanh Hoa Garden',

@@ -156,7 +156,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 height: 10,
                 decoration: const BoxDecoration(color: divince),
               ),
-              _infor('Thông tin cây (vườn) của bạn :'),
+              _infor('Thông tin cây :'),
               Container(
                 height: 10,
                 decoration: const BoxDecoration(color: divince),
@@ -209,7 +209,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 height: 10,
               ),
               const Text(
-                'Chiều cao của cây (độ rộng của vườn) :',
+                'Chiều cao của cây :',
                 style: TextStyle(fontSize: 18),
               ),
               const SizedBox(
@@ -219,7 +219,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
               const SizedBox(
                 height: 10,
               ),
-              const Text(
+             /* const Text(
                 'Ghi chú :',
                 style: TextStyle(fontSize: 18),
               ),
@@ -227,7 +227,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 height: 10,
               ),
               _textFormField('Mô tả cây (vườn) của bạn', 'Mô tả cây (vườn)',
-                  false, () {}, _inforController, 150, 3),
+                  false, () {}, _inforController, 150, 3),*/
             ],
           ),
         )
@@ -398,7 +398,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(
+              /*const SizedBox(
                 height: 10,
               ),
               (!service.atHome)
@@ -415,7 +415,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                   ),
                   _selectWorkingDate(),
                 ],
-              ),
+              ),*/
               const SizedBox(
                 height: 10,
               ),
@@ -625,7 +625,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 fontSize: 20, color: priceColor, fontWeight: FontWeight.w500),
           ),
           const Spacer(),
-          GestureDetector(
+          /*GestureDetector(
             onTap: () {
               // print('trước 123 : ' +
               //     sharedPreferences.getString('ContactDetail')!);
@@ -645,7 +645,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                     fontWeight: FontWeight.bold),
               ),
             ),
-          )
+          )*/
         ],
       ),
     );

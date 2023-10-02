@@ -220,6 +220,59 @@ String formatDate1(DateTime date) {
   String result;
   return result = DateFormat('dd/MM/yyyy').format(date);
 }
+String getToday(DateTime date) {
+  String result = DateFormat('yyyy-MM-dd').format(date);
+  return result;
+}
+
+Color colorWorkingDate(String value) {
+  Color result = Colors.black;
+  switch (value) {
+    case "WAITING":
+      result = Colors.yellow.shade700;
+      break;
+    case "WORKING":
+      result = Colors.green;
+      break;
+    case "DONE":
+      result = buttonColor;
+      break;
+    case "CUSTOMERCANCELED":
+      result = Colors.red;
+      break;
+    case "STAFFCANCELED":
+      result = Colors.red;
+      break;
+  }
+  return result;
+}
+
+String convertStatusWorkingDate(String value) {
+  String result = value;
+  switch (value) {
+    case "WAITING":
+      result = 'Chờ thực hiện';
+      break;
+    case "WORKING":
+      result = 'Đang thực hiện';
+      break;
+    case "DONE":
+      result = 'Hoàn thành';
+      break;
+    case "CUSTOMERCANCELED":
+      result = 'KH Hủy';
+      break;
+    case "STAFFCANCELED":
+      result = 'Hủy';
+      break;
+  }
+  return result;
+}
+List<String> tab = [
+  ('Hôm nay'),
+  ('Lịch theo tháng'),
+  ('Lịch theo HĐ'),
+];
 
 var f = NumberFormat("###,###,###", "en_US");
 String setPriceService(double price, int type, int pack, int months) {

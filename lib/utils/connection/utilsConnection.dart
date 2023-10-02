@@ -61,6 +61,7 @@ const getScheduleInWeekURL = '/contract/getContractDetailByStaffTokenAndDate?';
 const getScheduleDetailURL = '/workingDate/getByWorkingDate?';
 const confirmWorkingURL = '/workingDate/addWorkingDate?contractDetailID=';
 const getWorkingURL = '/workingDate/v2/getByWorkingDate?';
+const getWorkingURL2 = '/workingDate/v2/getByStaffID?';
 const getWorkingDetailURL = '/workingDate/getWorkingDateByContractDetailID?';
 
 //cart

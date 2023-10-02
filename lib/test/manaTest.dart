@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -6,28 +6,27 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:overlay_loading_progress/overlay_loading_progress.dart';
-import 'package:popup_banner/popup_banner.dart';
+import 'package:provider/provider.dart';
 import 'package:thanhhoa_garden_staff_app/components/button/dialog_button.dart';
-import 'package:thanhhoa_garden_staff_app/models/contract/contractDetail/contract_detail.dart';
 import 'package:thanhhoa_garden_staff_app/models/manaContract/manaServiceType/mana_service_type.dart';
 import 'package:thanhhoa_garden_staff_app/utils/format/date.dart';
 import '../../components/appBar.dart';
-import '../../components/image/choose_image_component.dart';
 import '../../constants/constants.dart';
 import '../../models/manaContract/manaServicePack/mana_service_pack.dart';
 import '../../models/service/service.dart';
 import '../../providers/contract/contract_provider.dart';
 import '../../providers/img_provider.dart';
 import '../../providers/service/service_provider.dart';
-import '../../utils/connection/utilsConnection.dart';
-import 'contractPage.dart';
-import 'contractPageDetail.dart';
+import '../blocs/service/service_bloc.dart';
+import '../blocs/service/service_event.dart';
+import '../blocs/service/service_state.dart';
+import '../screens/contract/contractPageDetail.dart';
 
 
-class ManaContractDetail extends StatefulWidget {
-  ManaContractDetail({super.key,required this.contractID, required this.workingDate, required this.des, required this.contractDetailID, required this.startDate, required this.endDate,
-  required this.servicePackID, required this.serviceTypeID, required this.serviceID, required this.price, this.plantStatus, this.plantIMG, required this.isUpdate,
-  required this.serviceType, required this.plantName, required this.totalPrice});
+class ManaContractDetail2 extends StatefulWidget {
+  ManaContractDetail2({super.key,required this.contractID, required this.workingDate, required this.des, required this.contractDetailID, required this.startDate, required this.endDate,
+    required this.servicePackID, required this.serviceTypeID, required this.serviceID, required this.price, this.plantStatus, this.plantIMG, required this.isUpdate,
+    required this.serviceType, required this.plantName, required this.totalPrice});
   final workingDate;
   final des;
   final contractDetailID;
@@ -41,16 +40,20 @@ class ManaContractDetail extends StatefulWidget {
   final totalPrice;
 
   @override
-  State<ManaContractDetail> createState() => _ManaContractDetailState();
+  State<ManaContractDetail2> createState() => _ManaContractDetail2State();
 }
 
-class _ManaContractDetailState extends State<ManaContractDetail> {
+class _ManaContractDetail2State extends State<ManaContractDetail2> {
   var f = NumberFormat("###,###,###", "en_US");
+
+
   Service service = Service();
 
   List<ServicePack> listServicePack = [];
 
   ServicePack servicePackSelect = ServicePack();
+
+  List<TypeService> listServiceType = [];
 
   List<String>? selectDate = [];
 
@@ -60,10 +63,10 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
   TypeService typeService = TypeService();
 
   final items = [
-  'Cây từ đến 0 - 0.5 m',
-  'Cây từ đến 0.5 - 1 m - Tăng 5%',
-  'Cây từ đến 0.5 - 1 m - Tăng 15%',
-  'Cây lớn hơn 2 m - Tăng 40%',
+    'Cây từ đến 0 - 0.5 m',
+    'Cây từ đến 0.5 - 1 m - Tăng 5%',
+    'Cây từ đến 0.5 - 1 m - Tăng 15%',
+    'Cây lớn hơn 2 m - Tăng 40%',
   ];
   String selectedOption ="Cây từ đến 0 - 0.5 m";
   String serviceTypeUpdate ="ST001";
@@ -112,22 +115,22 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
       selectedOption ="Cây từ đến 0 - 0.5 m";
     }
     widget.isUpdate == 1 ? setState((){
-    for(int i = 0; i <= widget.plantIMG.length - 1; i++){
-      imgURL.add(widget.plantIMG[i].imgUrl);
-    }
-    _inforPlantController = TextEditingController(text: widget.plantStatus);
-    contractDetailData = ({
-      "id": "${widget.contractDetailID!}",
-      "note": "${widget.des!}",
-      "timeWorking": "${widget.workingDate!}",
-      "startDate": "${widget.startDate!.toString().substring(0,10)}",
-      "endDate": "${widget.endDate!.toString().substring(0,10)}",
-      "servicePackID": "${widget.servicePackID!}",
-      "serviceTypeID": "${widget.serviceTypeID!}",
-      "plantName": "${widget.plantName!}",
-      "plantStatus": "${widget.plantStatus!}",
-      "plantIMG": []
-    });
+      for(int i = 0; i <= widget.plantIMG.length - 1; i++){
+        imgURL.add(widget.plantIMG[i].imgUrl);
+      }
+      _inforPlantController = TextEditingController(text: widget.plantStatus);
+      contractDetailData = ({
+        "id": "${widget.contractDetailID!}",
+        "note": "${widget.des!}",
+        "timeWorking": "${widget.workingDate!}",
+        "startDate": "${widget.startDate!.toString().substring(0,10)}",
+        "endDate": "${widget.endDate!.toString().substring(0,10)}",
+        "servicePackID": "${widget.servicePackID!}",
+        "serviceTypeID": "${widget.serviceTypeID!}",
+        "plantName": "${widget.plantName!}",
+        "plantStatus": "${widget.plantStatus!}",
+        "plantIMG": []
+      });
     }) : setState((){
       contractDetailData = ({
         "id": "${widget.contractDetailID!}",
@@ -142,10 +145,6 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
         "plantIMG": []
       });
     });
-    setState(() {
-      GetServiceInfo();
-      GetServicePackInfo();
-    });
     _inforController = TextEditingController(text: widget.des);
     _plantNameController = TextEditingController(text: widget.plantName);
     startDate = DateTime.now().add(const Duration(days: 1));
@@ -154,54 +153,49 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
     //typeService = service.typeList!.first;
     _StartDateController.text = formatDatenoTime2(widget.startDate);
     _endDateController.text = formatDatenoTime2(widget.endDate);
-    getServicePack();
+    setState(() {
+      getServicePack();
+      getServiceType();
+      totalPrice = f.format(widget.totalPrice);
+    });
     super.initState();
+  }
+
+  getServiceType(){
+    serviceProvider.getAllService().then((value){
+      setState(() {
+        listServiceType = serviceProvider.listService![0].typeList!;
+        for (int i = 0 ; i < listServiceType.length ; i++){
+          if (listServiceType[i].id == widget.serviceTypeID){
+            typeService = listServiceType[i];
+          }
+        }
+      });
+    });
   }
 
   getServicePack() {
     serviceProvider.getAllServicePack().then((value) {
       setState(() {
-        int month = 1;
         listServicePack = serviceProvider.listSeriverPack!;
-        widget.servicePackID == 'SP001' ? servicePackSelect = listServicePack.first :
-        widget.servicePackID == 'SP002' ? servicePackSelect = listServicePack[1] :
-        widget.servicePackID == 'SP003' ? servicePackSelect = listServicePack[2] :
-        widget.servicePackID == 'SP004' ? servicePackSelect = listServicePack[3] :
-        servicePackSelect = listServicePack[4];
-        widget.servicePackID == 'SP001' ? month = 1 :
-        widget.servicePackID == 'SP002' ? month = 3 :
-        widget.servicePackID == 'SP003' ? month = 6 :
-        widget.servicePackID == 'SP004' ? month = 12 :
-        month = 24;
-        print("servicePackSelect.percentage: " + servicePackSelect.percentage.toString());
-        totalPrice = setPriceService(
-            widget.price,
-            /*typeService.percentage*/0,
-            servicePackSelect.percentage,
-            month);
+        for (int i = 0 ; i < listServicePack.length ; i++){
+          if (listServicePack[i].id == widget.servicePackID){
+            servicePackSelect = listServicePack[i];
+          }
+        }
       });
     });
   }
 
   //Service service = Service();
-   String selectDate2 = '' ;
+  String selectDate2 = '' ;
 
-  List <ManaServiceType> typeService1 = [];
   List <ManaServicePack> packService = [];
   bool firstime = true;
   int erorState = 0;
   bool checkFieldName = true;
   bool checkFieldDes = true;
   bool checkFieldIMG = true;
-  Future<dynamic> GetServiceInfo() async {
-    typeService1 = (await fetchServiceTypeByID(widget.serviceID));
-    return typeService1;
-  }
-  Future<dynamic> GetServicePackInfo() async {
-    packService = (await fetchServicePack());
-    return packService;
-  }
-
 
   @override
   void dispose() {
@@ -542,7 +536,7 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
               const SizedBox(
                 height: 10,
               ),
-              _listSize(/*typeService*/),
+              _listSize(),
               const SizedBox(
                 height: 10,
               ),
@@ -570,32 +564,71 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
         border: Border.all(color: buttonColor, width: 2),
         borderRadius: BorderRadius.circular(25.0),
       ),
-      child: DropdownButton<String>(
-        value: selectedOption,
-        onChanged: (String? newValue) {
+      child: DropdownButton<TypeService>(
+        isExpanded: false,
+        value: typeService,
+        icon: const Icon(Icons.arrow_downward),
+        elevation: 16,
+        style: const TextStyle(color: Colors.deepPurple),
+        onChanged: (TypeService? value) {
           setState(() {
-            selectedOption = newValue!;
-            isTypeUpdate = true;
-            if(newValue == 'Cây từ đến 0.5 - 1 m - Tăng 5%'){
-              serviceTypeUpdate = 'ST002';
-            }else if(newValue == 'Cây từ đến 0.5 - 1 m - Tăng 15%'){
-              serviceTypeUpdate = 'ST003';
-            }else if(newValue == 'Cây lớn hơn 2 m - Tăng 40%'){
-              serviceTypeUpdate = 'ST004';
-            } else {
-              serviceTypeUpdate = 'ST001';
-            }
+            typeService = value!;
+            totalPrice = setPriceService(
+                widget.price,
+                typeService.percentage,
+                servicePackSelect.percentage,
+                countMonths(startDate!, endDate!));
           });
         },
-        items: items.map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
+        items: listServiceType!
+            .map<DropdownMenuItem<TypeService>>((TypeService value) {
+          return DropdownMenuItem<TypeService>(
             value: value,
-            child: Text(value, style: TextStyle(color: buttonColor)),
+            child: SizedBox(
+                width: MediaQuery.of(context).size.width - 130,
+                child: AutoSizeText(
+                    'Chiều cao (diện tích) ${value.size} (tăng ${value.percentage}%)',
+                    style: const TextStyle(fontSize: 18, color: buttonColor))),
           );
         }).toList(),
-      )
+      ),
     );
   }
+/*  Widget _listSize(*//*Service service*//*) {
+    return Container(
+        padding: const EdgeInsets.all(10),
+        height: 58,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          border: Border.all(color: buttonColor, width: 2),
+          borderRadius: BorderRadius.circular(25.0),
+        ),
+        child: DropdownButton<String>(
+          value: selectedOption,
+          onChanged: (String? newValue) {
+            setState(() {
+              selectedOption = newValue!;
+              isTypeUpdate = true;
+              if(newValue == 'Cây từ đến 0.5 - 1 m - Tăng 5%'){
+                serviceTypeUpdate = 'ST002';
+              }else if(newValue == 'Cây từ đến 0.5 - 1 m - Tăng 15%'){
+                serviceTypeUpdate = 'ST003';
+              }else if(newValue == 'Cây lớn hơn 2 m - Tăng 40%'){
+                serviceTypeUpdate = 'ST004';
+              } else {
+                serviceTypeUpdate = 'ST001';
+              }
+            });
+          },
+          items: items.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value, style: TextStyle(color: buttonColor)),
+            );
+          }).toList(),
+        )
+    );
+  }*/
 
   Widget _textFormField(
       String label,
@@ -671,7 +704,7 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
             isPackUpdate = true;
             totalPrice = setPriceService(
                 widget.price,
-                /*typeService.percentage*/0,
+                typeService.percentage,
                 servicePackSelect.percentage,
                 countMonths(startDate!, endDate!));
           });
@@ -729,20 +762,19 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
                   : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Text(
-                        'Thời gian làm việc : ',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      selectDate == null || selectDate!.isEmpty ? Text(
-                        widget.workingDate.toString(),
-                        style: const TextStyle(fontSize: 14, color: buttonColor),
-                      ) : Text(
-                        selectDate2.toString(),
-                        style: const TextStyle(fontSize: 14, color: buttonColor),
-                      ),
-                    ],
+                  const Text(
+                    'Thời gian làm việc : ',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  selectDate == null || selectDate!.isEmpty ? Text(
+                    widget.workingDate.toString(),
+                    style: const TextStyle(fontSize: 16, color: buttonColor, fontWeight: FontWeight.bold),
+                  ) : Text(
+                    selectDate2.toString(),
+                    style: const TextStyle(fontSize: 16, color: buttonColor, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(
                     height: 10,
@@ -840,7 +872,7 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
               endDate = startDate.add(const Duration(days: 365));
               servicePackUpdate = 'SP004';
               break;
-              case '2':
+            case '2':
               endDate = startDate.add(const Duration(days: 730));
               servicePackUpdate = 'SP005';
               break;
@@ -865,7 +897,7 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
     }
     setState(() {
       if (endDate != null) _endDateController.text = formatDate1(endDate!);
-      totalPrice = setPriceService(widget.price, /*typeService.percentage!*/ 0,
+      totalPrice = setPriceService(widget.price, typeService.percentage! ,
           servicePackSelect.percentage, countMonths(startDate, endDate!));
     });
   }
@@ -922,7 +954,6 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
                     selectDate = p0.cast<String>();
                     firstime = false;
                     selectDate2 = selectDate!.join(' - ');
-                    print("selectDate : " + selectDate.toString());
                   });
                 },
                 maxChildSize: 0.5,
@@ -976,9 +1007,6 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
           const Spacer(),
           GestureDetector(
             onTap: () {
-              // print('trước 123 : ' +
-              //     sharedPreferences.getString('ContactDetail')!);
-              //addContactService();
               setState(() async {
                 imgURL.isNotEmpty ? contractDetailData.addAll({
                   "plantIMG": imgURL
@@ -1010,79 +1038,44 @@ class _ManaContractDetailState extends State<ManaContractDetail> {
                   "serviceTypeID": serviceTypeUpdate
                 }) : null;
                 print("contractDetailData: $contractDetailData");
-                  if(_inforPlantController.text.isNotEmpty && imgURL.isNotEmpty && _plantNameController.text.isNotEmpty && ( selectDate!.length == 3 || selectDate!.length == 0)){
-                    checkFieldIMG = true;
-                    checkFieldName = true;
-                    checkFieldDes = true;
-                    print("đúng");
-                    OverlayLoadingProgress.start(context);
-                    bool checkSucess = await ChangeContractDetail(contractDetailData);
-                    if(checkSucess){
-                      setState(() {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => ContractDetailPage(contractID: widget.contractID),
-                        ));
-                      });
-                    } else {Navigator.pop(context);}
-                    OverlayLoadingProgress.stop();
-                  }
-                  if(_plantNameController.text.isEmpty){
+                if(_inforPlantController.text.isNotEmpty && imgURL.isNotEmpty && _plantNameController.text.isNotEmpty&& ( selectDate!.length == 3 || selectDate!.length == 0)){
+                  checkFieldIMG = true;
+                  checkFieldName = true;
+                  checkFieldDes = true;
+                  OverlayLoadingProgress.start(context);
+                  bool checkSucess = await ChangeContractDetail(contractDetailData);
+                  if(checkSucess){
                     setState(() {
-                      checkFieldName = false;
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ContractDetailPage(contractID: widget.contractID),
+                      ));
                     });
-                  } else {setState(() {
-                    checkFieldName = true;
-                  });}
-                  if(_inforPlantController.text.isEmpty){
-                    setState(() {
-                      checkFieldDes = false;
-                    });
-                  } else {setState(() {
-                    checkFieldDes = true;
-                  });}
-                  if(imgURL.isEmpty){
-                    setState(() {
-                      checkFieldIMG = false;
-                    });
-                  } else {setState(() {
-                    checkFieldIMG = true;
-                  });}
-                  /*if(_inforPlantController.text.isEmpty && imgURL.isNotEmpty && _plantNameController.text.isNotEmpty){
-                    setState(() {
-                      erorState = 1;
-                    });
-                  } if(imgURL.isEmpty && _inforPlantController.text.isNotEmpty && _plantNameController.text.isNotEmpty){
+                  } else {Navigator.pop(context);}
+                  OverlayLoadingProgress.stop();
+                }
+                if(_plantNameController.text.isEmpty){
                   setState(() {
-                    erorState = 2;
+                    checkFieldName = false;
                   });
-                  } if(imgURL.isEmpty && _inforPlantController.text.isEmpty && _plantNameController.text.isEmpty){
+                } else {setState(() {
+                  checkFieldName = true;
+                });}
+                if(_inforPlantController.text.isEmpty){
                   setState(() {
-                    erorState = 3;
+                    checkFieldDes = false;
                   });
-                  }if(_inforPlantController.text.isEmpty && imgURL.isNotEmpty && _plantNameController.text.isEmpty){
-                    setState(() {
-                      erorState = 4;
-                    });
-                  } if(imgURL.isEmpty && _inforPlantController.text.isNotEmpty && _plantNameController.text.isEmpty){
+                } else {setState(() {
+                  checkFieldDes = true;
+                });}
+                if(imgURL.isEmpty){
                   setState(() {
-                    erorState = 5;
+                    checkFieldIMG = false;
                   });
-                  } if(imgURL.isEmpty && _inforPlantController.text.isEmpty && _plantNameController.text.isEmpty){
-                  setState(() {
-                    erorState = 6;
-                  });
-                  }if(_inforPlantController.text.isNotEmpty && imgURL.isEmpty && _plantNameController.text.isNotEmpty){
-                    setState(() {
-                      erorState = 7;
-                    });
-                  }
-                  if(_inforPlantController.text.isNotEmpty && imgURL.isNotEmpty && _plantNameController.text.isEmpty){
-                    setState(() {
-                      erorState = 8;
-                    });
-                  } */
+                } else {setState(() {
+                  checkFieldIMG = true;
+                });}
               });
             },
             child: Container(

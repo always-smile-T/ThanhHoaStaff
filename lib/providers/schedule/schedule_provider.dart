@@ -43,18 +43,34 @@ Future<List<WorkingInSchedule>> fetchScheduleInWeek(from, to) async {
     List<WorkingInSchedule> contractDetails = ((jsonDecode(decoded)) as List)
         .map((json) => WorkingInSchedule.fromJson(json as Map<String, dynamic>))
         .toList();
-    print("contractDetails nè: ");
-    print(contractDetails.first);
+    return contractDetails;
+  } else {
+    throw Exception('Failed to fetch contract details');
+  }
+}
+Future<List<WorkingInSchedule>> fetchScheduleByUserID(userID, from, to) async {
+  var header = getheader(getTokenAuthenFromSharedPrefs());
+  String url = '$mainURL${getWorkingURL2}userID=$userID&from=$from&to=$to';
+  final response = await http.get(
+    Uri.parse(url),
+    headers: header,
+  );
+  final decoded = utf8.decode(response.bodyBytes);
+  if (response.statusCode == 200) {
+    List<WorkingInSchedule> contractDetails = ((jsonDecode(decoded)) as List)
+        .map((json) => WorkingInSchedule.fromJson(json as Map<String, dynamic>))
+        .toList();
     return contractDetails;
   } else {
     throw Exception('Failed to fetch contract details');
   }
 }
 
-Future<List<WorkingInSchedule>> fetchScheduleContractDetail(contractDetailD) async {
+Future<List<WorkingInSchedule>> fetchScheduleContractDetail(contractDetailD, contractID, whereCall) async {
   var header = getheader(getTokenAuthenFromSharedPrefs());
-  var token = getTokenAuthenFromSharedPrefs();
-  String url = '$mainURL${getWorkingDetailURL}contractDetailID=$contractDetailD&pageNo=0&pageSize=250&sortBy=ID&sortAsc=true';
+  String url = '';
+  whereCall ? url = '$mainURL${getWorkingDetailURL}contractDetailID=$contractDetailD&pageNo=0&pageSize=150&sortBy=ID&sortAsc=true' :
+  url = '$mainURL/workingDate/v2/getAllByContractID?contractID=$contractID&pageNo=0&pageSize=300&sortBy=ID&sortAsc=true';
   final response = await http.get(
     Uri.parse(url),
     headers: header,
@@ -130,7 +146,7 @@ Future <bool?> checkWorkingDate(contractDetailID, date) async {
 }
 //check start working
 
-Future checkStartWorking(workingDateID, startWorkingIMG, staffID) async {
+Future <bool> checkStartWorking(workingDateID, startWorkingIMG, staffID) async {
   var header = getheader(getTokenAuthenFromSharedPrefs());
   String url = '$mainURL/workingDate/v2/addStartWorkingDate?workingDateID=$workingDateID&startWorkingIMG=$startWorkingIMG&staffID=$staffID';
   final response = await http.post(
@@ -147,6 +163,7 @@ Future checkStartWorking(workingDateID, startWorkingIMG, staffID) async {
         backgroundColor: buttonColor,
         textColor: Colors.white,
         fontSize: 16.0);
+    return true;
   } else {
     Fluttertoast.showToast(
         msg: "Đã Có Lỗi Xẩy Ra",
@@ -156,6 +173,7 @@ Future checkStartWorking(workingDateID, startWorkingIMG, staffID) async {
         backgroundColor: ErorText,
         textColor: Colors.white,
         fontSize: 16.0);
+    return false;
   }
 }
 
@@ -178,6 +196,7 @@ Future checkEndWorking(workingDateID, endWorkingIMG, staffID) async {
         backgroundColor: buttonColor,
         textColor: Colors.white,
         fontSize: 16.0);
+    return true;
   } else {
     Fluttertoast.showToast(
         msg: "Đã Có Lỗi Xẩy Ra",
@@ -187,5 +206,6 @@ Future checkEndWorking(workingDateID, endWorkingIMG, staffID) async {
         backgroundColor: ErorText,
         textColor: Colors.white,
         fontSize: 16.0);
+    return false;
   }
 }

@@ -66,7 +66,7 @@ Future<List<ContractDetail>> fetchAllContractDetailOLD() async {
 
 Future<List<ContractDetail>> fetchContractDetailByID(id, pageNo, pageSize) async {
   var header = getheader(getTokenAuthenFromSharedPrefs());
-  String url = 'https://thanhhoagarden.herokuapp.com/contract/contractDetail/$id?pageNo=$pageNo&pageSize=$pageSize&sortBy=ID&sortAsc=true';
+  String url = mainURL+'contract/contractDetail/$id?pageNo=$pageNo&pageSize=$pageSize&sortBy=ID&sortAsc=true';
   final response = await http.get(
     Uri.parse(url),
     headers: header,
@@ -92,7 +92,7 @@ Future<List<ManaServiceType>> fetchServiceTypeByID(serviceId) async {
     headers: header,
   );
   final decoded = utf8.decode(response.bodyBytes);
-  print(decoded);
+
   if (response.statusCode == 200) {
     List<ManaServiceType> services = ((jsonDecode(decoded)) as List)
         .map((json) => ManaServiceType.fromJson(json as Map<String, dynamic>))
@@ -123,20 +123,19 @@ Future<List<ManaServicePack>> fetchServicePack() async {
 }
 
 
-Future<Contract> fetchAContract( contractId) async {
+Future<bool> fetchAContract( contractId) async {
   var header = getheader(getTokenAuthenFromSharedPrefs());
   String url = 'https://thanhhoagarden.herokuapp.com/contract/getByID?contractID=$contractId';
   final response = await http.get(
     Uri.parse(url),
     headers: header,
   );
-  print("response.statusCode: " + response.statusCode.toString());
   final responseJson = jsonDecode(response.body);
   if (response.statusCode == 200) {
-    Contract contract = Contract.fromJson(responseJson);
-    return contract;
+    //Contract contract = Contract.fromJson(responseJson);
+    return true;
   } else {
-    throw Exception('Failed to fetch contract details');
+    return false;
   }
 }
 
@@ -178,28 +177,26 @@ Future<List<OrderDetailbyID>?> fetchAOrder(OrderrId) async {
     }
   throw Exception('API returned status code: ${response.statusCode}');
   }
-Future changeContractStatus(contractID, status, reason, staffID) async {
+Future CancelContract(contractID, reason, staffID) async {
   var header = getheader(getTokenAuthenFromSharedPrefs());
   String url = '';
-  (reason == null) ?  url = '$mainURL/contract/changeContractStatus?contractID=$contractID&staffID=$staffID&status=$status' :
-  '$mainURL/contract/changeContractStatus?contractID=$contractID&staffID=$staffID&reason=$reason&status=$status';
+  url = '$mainURL/contract/changeContractStatus?contractID=$contractID&staffID=$staffID&reason=$reason&status=STAFFCANCELED';
   final response = await http.put(
     Uri.parse(url),
     headers: header,
   );
-  print("url: " + url);
 
   if (response.statusCode == 200) {
     Fluttertoast.showToast(
-        msg: "Kết thúc công việc",
+        msg: "Đã huỷ hợp đồng $contractID",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
         backgroundColor: buttonColor,
         textColor: Colors.white,
         fontSize: 16.0);
+    return true;
   } else {
-    print("response.statusCode: "+ response.statusCode.toString());
     Fluttertoast.showToast(
         msg: "Đã Có Lỗi Xẩy Ra",
         toastLength: Toast.LENGTH_SHORT,
@@ -208,17 +205,16 @@ Future changeContractStatus(contractID, status, reason, staffID) async {
         backgroundColor: ErorText,
         textColor: Colors.white,
         fontSize: 16.0);
+    return false;
   }
 }
-Future addContractIMG(contractID, IMG) async {
+Future <bool> addContractIMG(contractID, IMG) async {
   var header = getheader(getTokenAuthenFromSharedPrefs());
   String url = 'https://thanhhoagarden.herokuapp.com/contract/addContractIMG?contractID=$contractID&listURL=$IMG';
   final response = await http.post(
     Uri.parse(url),
     headers: header,
   );
-  print("url: "+ url);
-  print("response: "+ response.headers.toString());
   if (response.statusCode == 200) {
     Fluttertoast.showToast(
         msg: "Đã Ký Hợp Đồng",
@@ -228,8 +224,8 @@ Future addContractIMG(contractID, IMG) async {
         backgroundColor: buttonColor,
         textColor: Colors.white,
         fontSize: 16.0);
+    return true;
   } else {
-    print("response.statusCode: "+ response.statusCode.toString());
     Fluttertoast.showToast(
         msg: "Đã Có Lỗi Xẩy Ra",
         toastLength: Toast.LENGTH_SHORT,
@@ -238,10 +234,11 @@ Future addContractIMG(contractID, IMG) async {
         backgroundColor: ErorText,
         textColor: Colors.white,
         fontSize: 16.0);
+    return false;
   }
 }
 
-Future<void> ChangeContractDetail (jsonData) async {
+Future<bool> ChangeContractDetail (jsonData) async {
   String jsonDataString = json.encode(jsonData);
   var header = getheader(getTokenAuthenFromSharedPrefs());
   String url = 'https://thanhhoagarden.herokuapp.com/contract';
@@ -250,8 +247,6 @@ Future<void> ChangeContractDetail (jsonData) async {
     headers: header,
     body: jsonDataString
   );
-  print("jsonDataString: " + jsonDataString.toString());
-  print("request: " + response.request.toString());
   if (response.statusCode == 200) {
     Fluttertoast.showToast(
         msg: "Đã sửa dịch vụ",
@@ -261,8 +256,8 @@ Future<void> ChangeContractDetail (jsonData) async {
         backgroundColor: buttonColor,
         textColor: Colors.white,
         fontSize: 16.0);
+    return true;
   } else {
-    print("response.statusCode: "+ response.statusCode.toString());
     Fluttertoast.showToast(
         msg: "Đã Có Lỗi Xẩy Ra",
         toastLength: Toast.LENGTH_SHORT,
@@ -271,5 +266,6 @@ Future<void> ChangeContractDetail (jsonData) async {
         backgroundColor: ErorText,
         textColor: Colors.white,
         fontSize: 16.0);
+    return false;
   }
 }

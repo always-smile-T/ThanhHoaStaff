@@ -5,6 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:popup_banner/popup_banner.dart';
 import 'package:thanhhoa_garden_staff_app/components/circular.dart';
 import 'package:thanhhoa_garden_staff_app/providers/contract/contract_provider.dart';
 import 'package:thanhhoa_garden_staff_app/utils/format/status.dart';
@@ -29,6 +30,7 @@ class _ContractPageState extends State<ContractPage> {
   var selectedTab = 0;
   int pageNo = 0;
   int PageSize = 50;
+  bool statusContract = true;
 
 
   @override
@@ -43,7 +45,7 @@ class _ContractPageState extends State<ContractPage> {
             height: 35,
           ),
           //search Bar
-          AppBarWiget(title: 'Hợp đồng'),
+          AppBarWiget(title: 'Hợp đồng', tail: filterContract(),),
           const SizedBox(
             height: 5,
           ),
@@ -78,7 +80,7 @@ class _ContractPageState extends State<ContractPage> {
     var size = MediaQuery.of(context).size;
     return FutureBuilder<List<Contract>>(
       //fetch follow ID (sort), pageNo == 0, pageSize == 10.
-      future: fetchContract(pageNo, PageSize, 'ID',true),
+      future: statusContract ? fetchContract(pageNo, PageSize, 'STATUS',true) : fetchContract(pageNo, PageSize, 'ID',true),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Circular();
@@ -105,11 +107,11 @@ class _ContractPageState extends State<ContractPage> {
                   if(contract[index].status == "CONFIRMING"){
                     isConfirming = true;
                   }
-                  return ((contract[index].status == 'WORKING' && selectedTab == 4) ||
-                      ((contract[index].status == 'DENIED' || (contract[index].status == 'CUSTOMERCANCELED')) && selectedTab == 6) ||
-                      (contract[index].status == 'SIGNED' && selectedTab == 3) ||
-                      (contract[index].status == 'DONE' && selectedTab == 5) ||
-                      (contract[index].status == 'CONFIRMING' && selectedTab == 2) ||(selectedTab == 0)
+                  return ((contract[index].status == 'WORKING' && selectedTab == 3) ||
+                      ((contract[index].status == 'DENIED' || (contract[index].status == 'CUSTOMERCANCELED')) && selectedTab == 5) ||
+                      (contract[index].status == 'SIGNED' && selectedTab == 2) ||
+                      (contract[index].status == 'DONE' && selectedTab == 4) ||
+                      (contract[index].status == 'CONFIRMING' && selectedTab == 1) ||(selectedTab == 0)
                   ) ? GestureDetector(
                     onTap: (){
                       Navigator.of(context).push(MaterialPageRoute(
@@ -121,8 +123,9 @@ class _ContractPageState extends State<ContractPage> {
                       margin: const EdgeInsets.all(10),
                       padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                          color: barColor,
-                          border: Border.all(width: 1),
+                          //color: barColor,
+                          gradient: tabBackground,
+                          border: Border.all(width: 1, color: buttonColor),
                           borderRadius: BorderRadius.circular(10)
                       ),
                       child: Stack(
@@ -134,14 +137,31 @@ class _ContractPageState extends State<ContractPage> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   // Image of Contract
-                                  Container(
-                                      decoration: BoxDecoration(
-                                        //shape: BoxShape.circle,
-                                          border: Border.all(
-                                              width: 3, color: Colors.white)),
-                                      width: 80,
-                                      height: 80,
-                                      child: contract[index].imgList != null ? Image.network(contract[index].imgList!.length == 0 ? getImageNoAvailableURL : contract[index].imgList![0].imgUrl.toString(), fit: BoxFit.fill,) : Image.network(getImageNoAvailableURL, fit: BoxFit.fill)
+                                  GestureDetector(
+                                    onTap: () {
+                                      PopupBanner(
+                                        useDots: false,
+                                        fit: BoxFit.fitWidth,
+                                        height: size.height - 150,
+                                        context: context,
+                                        images: [contract[index].imgList!.isNotEmpty ? contract[index].imgList![0].imgUrl.toString() : NoIMG],
+                                        autoSlide: false,
+                                        dotsAlignment: Alignment.bottomCenter,
+                                        dotsColorActive: buttonColor,
+                                        dotsColorInactive:
+                                        Colors.grey.withOpacity(0.5),
+                                        onClick: (index) {},
+                                      ).show();
+                                    },
+                                    child: Container(
+                                        decoration: BoxDecoration(
+                                          //shape: BoxShape.circle,
+                                            border: Border.all(
+                                                width: 1, color: Colors.black)),
+                                        width: 80,
+                                        height: 100,
+                                        child: contract[index].imgList != null ? Image.network(contract[index].imgList!.length == 0 ? getImageNoAvailableURL : contract[index].imgList![0].imgUrl.toString(), fit: BoxFit.fill,) : Image.network(getImageNoAvailableURL, fit: BoxFit.fill)
+                                    ),
                                   ),
                                   const SizedBox(height: 10,),
                                   _contractFiled('ID',contract[index].id.toString()),
@@ -150,11 +170,11 @@ class _ContractPageState extends State<ContractPage> {
                               const SizedBox(
                                 width: 7,
                               ),
-                              Container(
+                              /*Container(
                                 width: 1,
                                 height: 110,
                                 decoration: const BoxDecoration(color: Colors.black54),
-                              ),
+                              ),*/
                               const SizedBox(
                                 width: 7,
                               ),
@@ -174,7 +194,7 @@ class _ContractPageState extends State<ContractPage> {
                                       _contractFiled('Khách hàng',contract[index].fullName.toString().length >= 25 ? (contract[index].fullName.toString().substring(0,22) + "...") : contract[index].fullName.toString()),
                                       _contractFiled('Ngày bắt đầu',formatDatenoTime(contract[index].startedDate.toString())),
                                       _contractFiled('Ngày kết thúc',formatDatenoTime(contract[index].expectedEndedDate.toString())),
-                                      _contractFiled('Giá trị hợp đồng','${f.format(contract[index].total)} đ'),
+                                      _contractFiledColor('Giá trị hợp đồng','${f.format(contract[index].total)} đ', Colors.deepOrange),
                                       _contractFiledColor('Trạng thái', formatStatus(contract[index].status.toString()), formatColorStatus(contract[index].status.toString())),
                                       _contractFiled('Địa chỉ',contract[index].address.toString().length >= 25 ? (contract[index].address.toString().substring(0,22) + "...") : contract[index].address.toString()),
                                     ],
@@ -271,6 +291,17 @@ class _ContractPageState extends State<ContractPage> {
           height: 5,
         ),
       ],
+    );
+  }
+
+  filterContract(){
+    return GestureDetector(
+      onTap: (){
+        setState(() {
+          statusContract = !statusContract;
+        });
+      },
+      child: const Icon(Icons.filter_alt_outlined, color: buttonColor, size: 30,),
     );
   }
 

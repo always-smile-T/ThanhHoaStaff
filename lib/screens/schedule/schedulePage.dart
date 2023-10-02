@@ -11,6 +11,7 @@ import 'package:thanhhoa_garden_staff_app/providers/contract/contract_provider.d
 import '../../components/appBar.dart';
 import '../../components/button/dialog_button.dart';
 import '../../components/schedule/calender_componenet2.dart';
+import '../../components/schedule/workingConponent.dart';
 import '../../constants/constants.dart';
 import '../../models/contract/contract.dart';
 import '../../models/workingDate/scheduleToday/schedule_today.dart';
@@ -20,8 +21,9 @@ import '../../utils/showDialog/show_dialog.dart';
 import '../contract/contractPageDetail.dart';
 
 class SchedulePage extends StatefulWidget {
-  const SchedulePage({super.key, required this.staffID});
+  const SchedulePage({super.key, required this.staffID, required this.whereCall});
   final staffID;
+  final whereCall;
 
 
   @override
@@ -34,6 +36,15 @@ class _SchedulePageState extends State<SchedulePage> {
   var selectedTabToday = 0; // For SUb Category (Today)
   var selectedTabInWeek = 0; // For SUb Category (Week schedule)
   var f = NumberFormat("###,###,###", "en_US");
+
+  @override
+  void initState() {
+    if(widget.whereCall == 1){
+      selectedTab = 1;
+    }
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -51,22 +62,16 @@ class _SchedulePageState extends State<SchedulePage> {
           const SizedBox(
             height: 5,
           ),
-          /*Center(
-            child: Container(
-              height: 1,
-              width: size.width - 180,
-              decoration: const BoxDecoration(color: buttonColor),
-            ),
-          ),*//*
-          const SizedBox(
-            height: 20,
+          Container(
+            height: 10,
+            decoration: const BoxDecoration(color: divince),
           ),
           //Main Category list
           SizedBox(
             height: 50,
             width: size.width,
             child: _listCategory(),
-          ),*/
+          ),
           Container(
             height: 10,
             decoration: const BoxDecoration(color: divince),
@@ -77,22 +82,17 @@ class _SchedulePageState extends State<SchedulePage> {
             width: size.width,
             child: _listCategoryToday(),
           ) : const SizedBox(),*/
-          /*(selectedTab == 0 || selectedTab == 1) ? Container(
-            height: 1,
-            width: size.width,
-            decoration: const BoxDecoration(color: buttonColor),
-          ): const SizedBox(),*/
           //Working List
-          Expanded(child: /*selectedTab == 2 ? _listSchedule() :
-          selectedTab == 0 ? _listJobToday() :*/
-           CanlenderComponent(staffID: widget.staffID!),),
+          Expanded(child: /*selectedTab == 2 ? _listSchedule() :*/
+          selectedTab == 0 ? _listJobToday() :
+          selectedTab == 1 ? CanlenderComponent(staffID: widget.staffID!) : const SizedBox(),),
         ]),
       ),
     );
   }
 
   //UI Category Today
-/*  Widget _listCategoryToday() {
+ /* Widget _listCategoryToday() {
     return ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
@@ -105,9 +105,9 @@ class _SchedulePageState extends State<SchedulePage> {
               },
               child: Container(
                 alignment: Alignment.center,
-                width: MediaQuery.of(context).size.width /3,
-                height: 30,
-               // padding: const EdgeInsets.all(5),
+                width: MediaQuery.of(context).size.width /4,
+                height: 50,
+                // padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                     color: (selectedTabToday == index) ? buttonColor : Colors.white),
                 //margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -119,13 +119,13 @@ class _SchedulePageState extends State<SchedulePage> {
                 ),)
           );
         },
-        itemCount: 3);
+        itemCount: 4);
   }*/
-  //UI Category - Sub
-  Widget _listCategoryInWeek() {
+
+  Widget _listCategory() {
     DateTime now = DateTime.now();
     String weekday = getWeekday(now.weekday);
-    int seletedDay = formatNumDay(weekday);
+    int selectedDay = formatNumDay(weekday);
     return ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
@@ -133,31 +133,37 @@ class _SchedulePageState extends State<SchedulePage> {
           return GestureDetector(
               onTap: () {
                 setState(() {
-                  selectedTabInWeek = index;
+                  selectedTab = index;
+                  selectedTab == 1 ? selectedTabInWeek = selectedDay : selectedTabInWeek = 0;
                 });
               },
               child: Container(
                 alignment: Alignment.center,
-                width: MediaQuery.of(context).size.width /7,
+                width: MediaQuery.of(context).size.width /2,
                 height: 30,
-               // padding: const EdgeInsets.all(5),
+                // padding: const EdgeInsets.all(5),
                 decoration:  BoxDecoration(
-                  border: seletedDay == index ? Border.all(width: 1, color: Colors.black) : Border.all(width: 0, color: background) ,
-                    color: (selectedTabInWeek == index) ? buttonColor : Colors.white),
+                    color: (selectedTab == index) ? buttonColor : Colors.white),
                 //margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-                child: AutoSizeText(dayOfWeek[index],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: (selectedTabInWeek == index) ? lightText : HintIcon),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AutoSizeText(tab[index],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: (selectedTab == index) ? lightText : HintIcon),
+                    ),
+                    const SizedBox(width: 10,)
+                  ],
                 ),)
           );
         },
-        itemCount: 7);
+        itemCount: 2);
   }
 
   //UI Main Category
-  Widget _listCategory() {
+  /*Widget _listCategory() {
     DateTime now = DateTime.now();
     String weekday = getWeekday(now.weekday);
     int selectedDay = formatNumDay(weekday);
@@ -190,25 +196,23 @@ class _SchedulePageState extends State<SchedulePage> {
             ),)
           );
         },
-        itemCount: 3);
-  }
+        itemCount: 2);
+  }*/
 
   //List Working Today
   Widget _listJobToday(){
-    bool ischeck = false;
-    bool check = false;
     DateTime now = DateTime.now();
-    String weekday = getWeekday(now.weekday);
+   // String weekday = getWeekday(now.weekday);
     String fweekday = now.year.toString() + '-' + now.month.toString().padLeft(2, '0') + '-' + now.day.toString().padLeft(2, '0');
-    var size = MediaQuery.of(context).size;
     return FutureBuilder<List<WorkingInSchedule>>(
-      future:fetchScheduleInWeek(fweekday,fweekday),
+      future:fetchScheduleByUserID(widget.staffID,fweekday,fweekday),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Circular();
         }
         if (snapshot.hasData) {
           List <WorkingInSchedule> cD = snapshot.data!;
+          //print("cD" + cD.toString());
           if (snapshot.data == null) {
             return const Center(
               child: Text(
@@ -225,142 +229,36 @@ class _SchedulePageState extends State<SchedulePage> {
                 itemCount: cD.length,
                 itemBuilder: (BuildContext context, int index) {
                   List days_list = (cD[index].timeWorking.toString().split(" - "));
-                  print("cD[index].timeWorking");
-                  print(cD[index].timeWorking);
-                  if(((selectedTabToday == 0 ) || (selectedTabToday == 1))) {
+                  /*if(((selectedTabToday == 1 && cD[index].status.toString() == 'WAITING' ) || (selectedTabToday == 2 && cD[index].status.toString() == 'WORKING')
+                      || (selectedTabToday == 3 && cD[index].status.toString() == 'DONE')  || (selectedTabToday == 0) )) {
                   for(int i = 0; i < days_list.length; i++ ){
                     if (days_list[i] == weekday){
-                      bool checkOk = false;
-                           return GestureDetector(
-                        onTap: () async{
-                          Contract contract = await fetchAContract(cD[index].id);
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ContractDetailPage(contractID: contract.id),
-                      ));
-                        },
-                        child: Column(
-                          children: [
-                            Container(
-                              width: size.width - 40,
-                              margin: const EdgeInsets.only(top: 5, bottom: 5),
-                              padding: const EdgeInsets.only(top: 5, bottom: 5),
-                              child: Stack(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          //Text(cD[index].showContractModel!.title.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          Column(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                width: size.width - 40,
-                                                height: 1,
-                                                decoration: const BoxDecoration(color: divince),
-                                              ),
-                                              const SizedBox(
-                                                height: 10,
-                                              ),
-                                              _contractFiled('Mã công việc', cD[index].id.toString()),
-                                              //_contractFiled('Mã hợp đồng', cD[index].showContractModel!.id.toString()),
-                                             // _contractFiled('Dịch vụ',cD[index].showServiceModel!.name.toString() + ' - ' + cD[index].showServiceTypeModel!.typeName.toString()),
-                                              _contractFiled('Lịch chăm sóc', cD[index].timeWorking.toString()),
-                                             // _contractFiled('Khách hàng', cD[index].showContractModel!.fullName.toString()),
-                                             // _contractFiled('Địa chỉ', cD[index].showContractModel!.address.toString()),
-                                             // _contractFiled('Điện thoại', cD[index].showContractModel!.phone.toString()),
-                                            ],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  /*Positioned(
-                                    top: 5,
-                                    right: 5,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: const [
-                                        Text("chi tiết", style: TextStyle(color: buttonColor, fontWeight: FontWeight.w500, fontSize: 12),),
-                                        Icon(Icons.chevron_right, color: buttonColor,)
-                                      ],
-                                    ),),*/
-                                  Positioned(
-                                    bottom: 5,
-                                    right: 5,
-                                    child: GestureDetector(
-                                      onTap: (){
-                                        showDialog<String>(
-                                          context: context,
-                                          builder: (context) => SystemPadding(
-                                            child:  AlertDialog(
-                                                contentPadding: const EdgeInsets.all(16.0),
-                                                content:  Row(
-                                                  children: const <Widget>[
-                                                    Text('Đã hoàn thành lịch chăm sóc này?'),
-                                                  ],
-                                                ),
-                                                actions: <Widget>[
-                                                  GestureDetector(
-                                                    onTap: () async {
-                                                      check = (await checkWorkingDate(cD[index].id, fweekday))!;
-                                                      if(check == true){
-                                                        Navigator.pop(context);
-                                                        Fluttertoast.showToast(
-                                                            msg: "Bạn đã đánh dấu công việc này rồi",
-                                                            toastLength: Toast.LENGTH_SHORT,
-                                                            gravity: ToastGravity.BOTTOM,
-                                                            timeInSecForIosWeb: 1,
-                                                            backgroundColor: highLightText,
-                                                            textColor: Colors.white,
-                                                            fontSize: 16.0);
-                                                      }
-                                                      else{
-                                                        ConfirmWorkingDate(
-                                                            cD[index].id);
-                                                        print("cD[index].id: " +
-                                                            cD[index].id
-                                                                .toString());
-                                                        Navigator.pop(context);
-                                                      }
-                                                    },
-                                                    child: const ConfirmButton(title: 'Xác nhận', width: 70.0),),
-                                                  GestureDetector(
-                                                    onTap: (){
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: const ConfirmButton(title: 'Quay Lại', width: 70.0,),),]
-                                            ),),
-                                        );
-                                      },
-                                      child: Container(
-                                        height: 35,
-                                        width: 70,
-                                        decoration: BoxDecoration(
-                                            color: buttonColor,
-                                            borderRadius: BorderRadius.circular(45)
-                                        ),
-                                        child: const Center(child: Text('Xác nhận', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),)),
-                                      ),
-                                    ),),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              height: 10,
-                              decoration: const BoxDecoration(color: divince),
-                            ),
-                          ],
-                        ),
+                           return WorkingComponent(staffID: widget.staffID!, schedule: cD[index], today: fweekday, day: fweekday, whereCall: 0,);
+                    }
+                  }} return const SizedBox();*/
+
+                  for(int i = 0; i < days_list.length; i++ ){
+                    /*print('g' + i.toString());
+                    print(days_list[i].toString().toLowerCase());
+                    print(weekday.toString().toLowerCase());*/
+                    if (days_list[i].toString().toLowerCase() == getWeekday(today.weekday)){
+                     // print(days_list[i].toString().toLowerCase() == weekday);
+                      return Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const SizedBox(width: 10),
+                              Text ('Dịch vụ ${index+1}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: buttonColor),),
+                            ],
+                          ),
+                          const SizedBox(height: 5,),
+                          WorkingComponent(staffID: widget.staffID!, schedule: cD[index], today: fweekday, day: fweekday, whereCall: 0,),
+                          const SizedBox(height: 10,)
+                        ],
                       );
                     }
-                  }} return const SizedBox();
+                  }return const SizedBox();
                 }
             );
           }
@@ -373,7 +271,7 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   //Main Schedule Field
-  Widget _contractFiled(String title, String des) {
+  /*Widget _contractFiled(String title, String des) {
     return Column(
       children: [
         Row(
@@ -387,8 +285,8 @@ class _SchedulePageState extends State<SchedulePage> {
         ),
       ],
     );
-  }
-  Widget _contractFiled2(String title, String des) {
+  }*/
+ /* Widget _contractFiled2(String title, String des) {
     return Column(
       children: [
         Row(
@@ -402,23 +300,23 @@ class _SchedulePageState extends State<SchedulePage> {
         ),
       ],
     );
-  }
+  }*/
 
 
   //List main category
   List <String> tab = [
-    ('Hôm nay'),('Lịch làm việc'),('Lịch sử')
+    ('Hôm nay'),('Lịch làm việc')
   ];
 
   //List today category
-  List <String> tabToday = [
-    ('Tất cả'),('Đã xong'),('Chưa xong')
-  ];
+  /*List <String> tabToday = [
+    ('Tất cả'),('Chờ'),('Đang làm'),('Xong')
+  ];*/
 
   //List Working follow weekday
-  List <String> dayOfWeek = [
-    ('Thứ 2'),('Thứ 3'),('Thứ 4'),('Thứ 5'),('Thứ 6'),('Thứ 7'),('Chủ nhật')
-  ];
+  /*List <String> dayOfWeek = [
+    ('thứ 2'),('thứ 3'),('thứ 4'),('thứ 5'),('thứ 6'),('thứ 7'),('chủ nhật')
+  ];*/
 
   //List weekday (get by DateTime.now)
   String getWeekday(int weekday) {
@@ -435,7 +333,7 @@ class _SchedulePageState extends State<SchedulePage> {
         return 'Thứ 6';
       case 6:
         return 'Thứ 7';
-      case 0:
+      case 7:
         return 'Chủ nhật';
       default:
         return '';

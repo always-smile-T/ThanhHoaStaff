@@ -4,6 +4,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:overlay_loading_progress/overlay_loading_progress.dart';
+import 'package:thanhhoa_garden_staff_app/screens/notification/notificationPage.dart';
 import '../../constants/constants.dart';
 import '../../models/contract/contract.dart';
 import '../../models/notification/notification.dart';
@@ -31,19 +33,49 @@ class _NotificationComponentState extends State<NotificationComponent> {
   Widget build(BuildContext context) {
     Noty noty = widget.noty;
     return GestureDetector(
-      onTap: () async{
+      onTap: () async {
         setState((){
           readOneNoty(noty.id);
         });
         location = getLocation(noty.link!.toString());
         locationID = getLocationID(noty.link!.toString());
         if(location == 'CONTRACT'){
-          Contract contract = await fetchAContract(locationID);
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => ContractDetailPage(contractID: locationID, contract: contract),
-          ));
+          OverlayLoadingProgress.start(context);
+          bool checkSuccess = await fetchAContract(locationID);
+          OverlayLoadingProgress.stop();
+          if(checkSuccess){
+            setState(() {
+              Navigator.of(context);
+              Navigator.of(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotificationPage(),
+                  ));
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => ContractDetailPage(contractID: locationID),
+              ));
+            });
+          }
+          else{
+            Fluttertoast.showToast(
+                msg: "Hợp đồng không khả dụng",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: buttonColor,
+                textColor: Colors.white,
+                fontSize: 16.0);
+          }
         }
         else if(location  == 'ORDER'){
+          Navigator.of(context);
+          Navigator.of(context);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NotificationPage(),
+              ));
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(

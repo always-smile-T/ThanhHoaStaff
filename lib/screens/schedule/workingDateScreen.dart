@@ -21,8 +21,11 @@ import '../../utils/showDialog/show_dialog.dart';
 import '../contract/contractPageDetail.dart';
 
 class WorkingDateFollowContractPage extends StatefulWidget {
-  const WorkingDateFollowContractPage({super.key, required this.contractDetailID});
+  const WorkingDateFollowContractPage({super.key, required this.contractDetailID, required this.contractID, required this.whereCall, required this.staffID});
   final contractDetailID;
+  final contractID;
+  final whereCall;
+  final staffID;
 
 
   @override
@@ -98,7 +101,7 @@ class _WorkingDateFollowContractPageState extends State<WorkingDateFollowContrac
   Widget _listSchedule(){
     var size = MediaQuery.of(context).size;
     return FutureBuilder<List<WorkingInSchedule>>(
-      future: fetchScheduleContractDetail(widget.contractDetailID),
+      future: fetchScheduleContractDetail(widget.contractDetailID, widget.contractID, widget.whereCall),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Circular();
@@ -115,7 +118,9 @@ class _WorkingDateFollowContractPageState extends State<WorkingDateFollowContrac
           } else {
             //List ClipRREct -> show history when hit the container
             //Need to Design better
+            print("staff1: " + widget.staffID.toString());
             int length = date.length;
+            print("staff1: " + date[10].showStaffModel!.id.toString());
             return ListView.builder(
               //padding: const EdgeInsets.symmetric(horizontal: 18),
               //scrollDirection: Axis.horizontal,
@@ -126,7 +131,7 @@ class _WorkingDateFollowContractPageState extends State<WorkingDateFollowContrac
                   return (date[length - index - 1].status.toString() == 'WAITING') ?
                   Card(
                     child: Padding(
-                      padding: EdgeInsets.all(5),
+                      padding: const EdgeInsets.all(15),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +140,11 @@ class _WorkingDateFollowContractPageState extends State<WorkingDateFollowContrac
                           //const SizedBox(height: 5,),
                           //Text(date[index].serviceName.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 5,),
+                          _contractFiled2('ID hợp đồng', widget.contractID.toString()),
+                          _contractFiled2('ID Dịch vụ', date[length - index - 1].contractDetailID.toString()),
+                          _contractFiled2('Tên cây', date[length - index - 1].plantName.toString()),
                           _contractFiled('Trạng thái',formatWorkingStatus(date[length - index - 1].status.toString()),date[length - index - 1].status.toString() ),
+                          (widget.staffID.toString() == date[length - index - 1].showStaffModel!.id.toString()) ? const SizedBox() : const Text('Đã chuyển cho nhân viên khác' , style: TextStyle(fontSize: 14, color: Colors.pink,),),
                         ],
                       ),
                     ),
@@ -154,6 +163,9 @@ class _WorkingDateFollowContractPageState extends State<WorkingDateFollowContrac
                           //const SizedBox(height: 5,),
                           //Text(date[index].serviceName.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 5,),
+                          _contractFiled2('ID hợp đồng', widget.contractID.toString()),
+                          _contractFiled2('ID Dịch vụ', date[length - index - 1].contractDetailID.toString()),
+                          _contractFiled2('Tên cây',  date[length - index - 1].title.toString()), //plantName
                           _contractFiled('Trạng thái',formatWorkingStatus(date[length - index - 1].status.toString()),date[length - index - 1].status.toString() ),
                         ],
                       ),
@@ -209,6 +221,12 @@ class _WorkingDateFollowContractPageState extends State<WorkingDateFollowContrac
                                             const SizedBox(
                                               height: 10,
                                             ),
+                                          ],
+                                        ),
+                                        date[length - index - 1].endWorkingIMG != null ? Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
                                             const Text('Thông tin sau làm việc' , style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: buttonColor)),
                                             const SizedBox(
                                               height: 5,
@@ -230,7 +248,7 @@ class _WorkingDateFollowContractPageState extends State<WorkingDateFollowContrac
                                               height: 5,
                                             ),
                                           ],
-                                        ),
+                                        ) : const SizedBox(),
                                       ],
                                     )
                                   ],
@@ -257,8 +275,8 @@ class _WorkingDateFollowContractPageState extends State<WorkingDateFollowContrac
       children: [
         Row(
           children: [
-            Text(title + ': ' , style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
-            Text(des , style: TextStyle(fontSize: 12, color: formatColorStatus(status)),),
+            Text(title + ': ' , style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),),
+            Text(des , style: TextStyle(fontSize: 14, color: formatColorStatus(status)),),
           ],
         ),
         const SizedBox(
@@ -273,7 +291,7 @@ class _WorkingDateFollowContractPageState extends State<WorkingDateFollowContrac
       children: [
         Row(
           children: [
-            Text(title + ': ' , style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),),
+            Text(title + ': ' , style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),),
             Text(des , style: TextStyle(fontSize: 14),),
           ],
         ),

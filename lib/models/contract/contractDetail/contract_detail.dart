@@ -11,6 +11,7 @@ class ContractDetail {
   String? endDate;
   String? expectedEndDate;
   String? plantStatus;
+  String? plantName;
   String? plantIMG;
   double? price;
   double? totalPrice;
@@ -30,6 +31,7 @@ class ContractDetail {
         this.endDate,
         this.expectedEndDate,
         this.plantStatus,
+        this.plantName,
         this.plantIMG,
         this.price,
         this.totalPrice,

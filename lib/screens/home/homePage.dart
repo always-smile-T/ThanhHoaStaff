@@ -19,6 +19,7 @@ import '../contract/contractPage.dart';
 import '../notification/notificationPage.dart';
 import '../order/orderHistoryScreen.dart';
 import '../schedule/schedulePage.dart';
+import '../schedule/scheduleScreen.dart';
 import '../service/servicePage.dart';
 import '../webview.dart';
 
@@ -123,7 +124,7 @@ class _HomePageState extends State<HomePage> {
                         builder: (context) => ServicePage(),
                       ));
                     },
-                    child: _dashboardButton('Dịch Vụ'),
+                    child: _dashboardButton('Dịch vụ'),
                   ),
                 ],
               ),
@@ -144,11 +145,20 @@ class _HomePageState extends State<HomePage> {
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black)),
+                  /*const SizedBox(height: 20,),
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ScheduleScreen(),
+                      ));
+                    },
+                    child: _dashboardButton('Lich Chăm Sóc Cây - Hiếu'),
+                  ),*/
                   const SizedBox(height: 20,),
                   GestureDetector(
                     onTap: (){
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => SchedulePage(staffID: widget.user!.userID),
+                        builder: (context) => SchedulePage(staffID: widget.user!.userID, whereCall: 0,),
                       ));
                     },
                     child: _dashboardButton('Lich Chăm Sóc Cây'),
@@ -157,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                   GestureDetector(
                     onTap: (){
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => ContractPage(),
+                        builder: (context) => const ContractPage(),
                       ));
                     },
                     child: _dashboardButton('Hợp Đồng Liên Quan'),
@@ -184,7 +194,7 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 20,),
                   GestureDetector(
                     onTap: (){
-                      AuthenticationProvider().logout();
+                     // AuthenticationProvider().logout();
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => const LoginPage()));
                     },
@@ -203,7 +213,8 @@ class _HomePageState extends State<HomePage> {
             top: 0,
             child: Container(
                 decoration: const BoxDecoration(
-                    color: barColor,
+                    gradient: narBarBackgroud,
+                   // color: barColor,
                     border: Border.symmetric(vertical: BorderSide.none, horizontal: BorderSide(width: 1))
                 ),
                 width: size.width,
@@ -290,6 +301,7 @@ class _HomePageState extends State<HomePage> {
             color: barColor,
             border: Border.all(width: 1),
             borderRadius: BorderRadius.circular(15),
+            gradient: tabBackground
           ),
           child: Text(title, style: const TextStyle(fontSize: 16),),
         ),
@@ -318,7 +330,7 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                     border: Border.all(color: darkText),
                     borderRadius: BorderRadius.circular(50),
-                    color: barColor),
+                    color: Colors.white),
                 child: FaIcon(icon, size: 28, color: buttonColor))),
       ),
     );

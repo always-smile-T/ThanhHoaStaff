@@ -42,15 +42,19 @@ Color formatColorStatus (status) {
     break;
     case 'CUSTOMERCANCELED' : fStatus = highLightText;
     break;
-    case 'SIGNED' : fStatus = Colors.yellowAccent;
+    case 'SIGNED' : fStatus = Colors.blueAccent;
     break;
-    case 'WORKING' : fStatus = Colors.green;
+    case 'WORKING' : fStatus = Colors.indigo;
     break;
-    case 'DONE' : fStatus = Colors.lightGreen;
+    case 'DONE' : fStatus = buttonColor;
     break;
     case 'APPROVED' : fStatus = buttonColor;
     break;
     case 'CONFIRMING' : fStatus = Colors.purple;
+    break;
+    case 'MISS' : fStatus = ErorText;
+    break;
+    case 'OTHER' : fStatus = ErorText;
     break;
     default : fStatus = Colors.black;
   }
@@ -126,8 +130,35 @@ String formatWorkingStatus (report) {
     break;
     case 'DONE' : fReport = 'Đã hoàn thành';
     break;
+    case 'MISS' : fReport = 'Không hoàng thành';
+    break;
     default : fReport = 'Đang cập nhật';
   }
 
   return fReport;
+}
+
+String formatWorking (status) {
+  String fStatus = '';
+  switch (status) {
+    case 'WAITING' : fStatus = 'Chưa làm';
+    break;
+    case 'WORKING' : fStatus = 'Đang Làm';
+    break;
+    case 'DONE' : fStatus = 'Hoàn thành';
+    break;
+    case 'MISS' : fStatus = 'Bỏ lỡ';
+    break;
+    default : fStatus = 'Đang cập nhật';
+  }
+
+  return fStatus;
+}
+String checkNull (status) {
+  String fStatus = '';
+  if(status == null || status == ''){
+    fStatus = '(đang cập nhật)';
+  }
+  fStatus = status;
+  return fStatus;
 }

@@ -16,7 +16,7 @@ class ConfirmButton extends StatelessWidget {
           color: buttonColor,
           borderRadius: BorderRadius.circular(45)
       ),
-      child: Center(child: Text(title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),)),
+      child: Center(child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),)),
     );
   }
 }
